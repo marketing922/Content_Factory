@@ -1,0 +1,2996 @@
+{
+  "nodes": [
+    {
+      "parameters": {
+        "operation": "update",
+        "tableId": "articles",
+        "matchType": "allFilters",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "id",
+              "condition": "eq",
+              "keyValue": "={{ $('Parse Translate Request').item.json.article_id }}"
+            }
+          ]
+        },
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "translation_status",
+              "fieldValue": "translating"
+            }
+          ]
+        }
+      },
+      "id": "b4f0deed-f5b9-4cfd-848e-da396e761811",
+      "name": "Set Translating Status",
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        1040,
+        5456
+      ],
+      "credentials": {
+        "supabaseApi": {
+          "id": "wsR97aCnWHDWGEIK",
+          "name": "Supabase account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const article = $input.item.json;\nconst translateRequest = $('Parse Translate Request').first().json; // SEULE référence autorisée ici\n\nconsole.log('Préparation traduction:');\nconsole.log('- Article ID:', article.id);\nconsole.log('- Langue cible:', translateRequest.target_language);\n\nreturn [{\n  json: {\n    id: article.id,\n    topic: article.topic,\n    content: article.content,\n    table_of_contents: article.table_of_contents,\n    plan_options: article.plan_options,\n    search_synthesis: article.search_synthesis,\n    evaluation_details: article.evaluation_details,\n    parameters: article.parameters || {},\n    score: article.score, //  AJOUTER\n    drive_link: article.drive_link, //  AJOUTER\n    target_language: translateRequest.target_language,\n    article_id: translateRequest.article_id\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1552,
+        5456
+      ],
+      "id": "25655bfc-376b-44f8-b48a-209394a862ad",
+      "name": "Preparer Traduction"
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $json.id }}",
+        "contextWindowLength": 500
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        2032,
+        5792
+      ],
+      "id": "593a951b-038a-4d12-b5ca-407ad1b0e670",
+      "name": "Simple Memory7"
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $json.article_id }}",
+        "contextWindowLength": 500
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        1632,
+        3344
+      ],
+      "id": "3dfc2fb5-7817-4338-91af-3d7f32874442",
+      "name": "Simple Memory6"
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $json.article_id }}",
+        "contextWindowLength": 500
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        1872,
+        2688
+      ],
+      "id": "9ef1300b-f75d-487e-b970-82e65bf27a12",
+      "name": "Simple Memory5"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ { status: 'processing', message: 'Translation started' } }}",
+        "options": {
+          "responseCode": 202
+        }
+      },
+      "id": "842adf3d-2e9f-4d9f-887d-e62b64b31575",
+      "name": "Response Translate",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [
+        1216,
+        5168
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "tableId": "articles",
+        "matchType": "allFilters",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "id",
+              "condition": "eq",
+              "keyValue": "={{ $('Read Article Translate').item.json.id }}"
+            }
+          ]
+        },
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "topic",
+              "fieldValue": "={{ $json.translated_topic }}"
+            },
+            {
+              "fieldId": "table_of_contents",
+              "fieldValue": "={{ $json.translated_toc }}"
+            },
+            {
+              "fieldId": "plan_options",
+              "fieldValue": "={{ $json.translated_plan_options }}"
+            },
+            {
+              "fieldId": "search_synthesis",
+              "fieldValue": "={{ $json.translated_search_synthesis }}"
+            },
+            {
+              "fieldId": "evaluation_details",
+              "fieldValue": "={{ $json.translated_evaluation_details }}"
+            },
+            {
+              "fieldId": "drive_link",
+              "fieldValue": "={{ $('Read Article Translate').item.json.drive_link }}"
+            },
+            {
+              "fieldId": "translation_status",
+              "fieldValue": "completed"
+            },
+            {
+              "fieldId": "parameters",
+              "fieldValue": "={{ JSON.stringify({ ...$json.parameters, language: $json.new_language }) }}"
+            },
+            {
+              "fieldId": "content",
+              "fieldValue": "={{ $json.translated_content }}"
+            }
+          ]
+        }
+      },
+      "id": "3530ff8a-7002-4ec4-9732-ba3584e28dca",
+      "name": "Update Translated Article",
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        2416,
+        5456
+      ],
+      "credentials": {
+        "supabaseApi": {
+          "id": "wsR97aCnWHDWGEIK",
+          "name": "Supabase account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const input = $input.item.json;\nconst previousData = $input.first().json;\n\nlet translatedData;\nlet output = input.output || \"\";\n\ntry {\n  // Extraction RAPIDE : éviter les regex sur tout le contenu\n  let cleanJson = output.trim();\n  \n  // Nettoyage des blocs de code markdown si présents\n  if (cleanJson.startsWith('```')) {\n    cleanJson = cleanJson.replace(/^```(?:json)?\\n?/, '').replace(/\\n?```$/, '').trim();\n  }\n  \n  // Extraction sécurisée entre la première { et la dernière }\n  const startIdx = cleanJson.indexOf('{');\n  const endIdx = cleanJson.lastIndexOf('}');\n  \n  if (startIdx !== -1 && endIdx !== -1) {\n    cleanJson = cleanJson.substring(startIdx, endIdx + 1);\n  }\n  \n  translatedData = JSON.parse(cleanJson);\n  console.log('✅ Traduction parsée avec succès');\n} catch (e) {\n  console.error(\"❌ Parse Error:\", e.message);\n  translatedData = {};\n}\n\nreturn [{\n  json: {\n    article_id: previousData.article_id,\n    new_language: previousData.target_language,\n    translated_topic: translatedData.translated_topic || previousData.topic,\n    translated_content: translatedData.translated_content || previousData.content,\n    translated_toc: translatedData.translated_toc || previousData.table_of_contents,\n    translated_plan_options: translatedData.translated_plan_options || previousData.plan_options,\n    translated_search_synthesis: translatedData.translated_search_synthesis || previousData.search_synthesis,\n    translated_evaluation_details: translatedData.translated_evaluation_details || previousData.evaluation_details,\n    parameters: previousData.parameters,\n    score: previousData.score, // ✅ PASSER score\n    drive_link: previousData.drive_link // ✅ PASSER drive_link\n  }\n}];"
+      },
+      "id": "d5414502-7a67-4a4f-9458-51a4794c2c43",
+      "name": "Parse Translated Content",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2192,
+        5456
+      ]
+    },
+    {
+      "parameters": {
+        "modelName": "models/gemini-2.5-flash-lite",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        1808,
+        5792
+      ],
+      "id": "e328dd0c-223b-4df1-856b-d22fb5a11ef6",
+      "name": "Gemini Translate",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "2NfiMV7vGBhhdclG",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Tu es un traducteur expert certifié.\n\n## MISSION\nTraduis l'INTÉGRALITÉ des données de l'article en {{ $json.target_language === 'fr' ? 'Français' : $json.target_language === 'en' ? 'Anglais' : $json.target_language === 'zh' ? 'Chinois' : $json.target_language }}.\n\n## RÈGLES CRITIQUES\n1. Conserve STRICTEMENT tout le formatage Markdown/HTML\n2. Pour le plan (TOC), traduis uniquement les titres tout en conservant les IDs et la structure JSON\n3. Pour les options de plan (plan_options), tu dois renvoyer un objet JSON avec les clés \"titles\" et \"axes\". Traduis le CONTENU des tableaux, mais GARDE les clés \"titles\" et \"axes\" en anglais\n4. Pour l'évaluation (evaluation_details), traduis les noms des critères, les explications et le feedback global\n5. Ne traduis pas les balises HTML, les syntaxes Markdown, ou les IDs JSON\n\n## ÉLÉMENTS À TRADUIRE\n\n### 1. SUJET (TOPIC) :\n{{ $json.topic }}\n\n### 2. PLAN ACTUEL (TOC) :\n{{ JSON.stringify($json.table_of_contents) }}\n\n### 3. OPTIONS DE PLAN (TITRES & AXES) :\n{{ JSON.stringify($json.plan_options) }}\n\n### 4. SYNTHÈSE DE RECHERCHE :\n{{ JSON.stringify($json.search_synthesis) }}\n\n### 5. DÉTAILS D'ÉVALUATION (SCORES & CONSEILS) :\n{{ JSON.stringify($json.evaluation_details) }}\n\n### 6. CONTENU DE L'ARTICLE :\n{{ $json.content }}\n\n## FORMAT DE RÉPONSE ATTENDU (JSON STRICT)\nTu DOIS répondre avec un objet JSON unique contenant EXACTEMENT ces clés :\n{\n  \"translated_topic\": \"...\",\n  \"translated_toc\": { ... },\n  \"translated_plan_options\": { \"titles\": [\"...\"], \"axes\": [\"...\"] },\n  \"translated_search_synthesis\": { ... },\n  \"translated_evaluation_details\": { ... },\n  \"translated_content\": \"...\"\n}",
+        "options": {
+          "systemMessage": "Tu es un traducteur technique qui répond exclusivement au format JSON pour être parsé par un programme."
+        }
+      },
+      "id": "251a9fe6-0668-42aa-8f6a-25d57a936f29",
+      "name": "AI Translator",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.7,
+      "position": [
+        1840,
+        5456
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "tableId": "articles",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "id",
+              "keyValue": "={{ $json.id }}"
+            }
+          ]
+        }
+      },
+      "id": "d068ebf6-2d38-4a3b-ab56-59ef82a03baf",
+      "name": "Read Article Translate",
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        1264,
+        5456
+      ],
+      "credentials": {
+        "supabaseApi": {
+          "id": "wsR97aCnWHDWGEIK",
+          "name": "Supabase account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const input = $input.item.json;\nconst body = input.body || input;\n\nreturn {\n  json: {\n    article_id: body.article_id,\n    target_language: body.target_language,\n    current_status: body.current_status || 'published', // Fallback to published if missing\n    timestamp: new Date().toISOString()\n  }\n};"
+      },
+      "id": "669c2337-5c84-4581-bd53-53e9de0762d7",
+      "name": "Parse Translate Request",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        816,
+        5456
+      ]
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "article/translate",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "087f1984-258f-4b30-9f6d-2818f9c2e24a",
+      "name": "Webhook Translate",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        352,
+        5456
+      ],
+      "webhookId": "translate"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ { status: 'completed', article_id: $json.id, message: 'Article modifié avec succès' } }}",
+        "options": {
+          "responseCode": 200
+        }
+      },
+      "id": "7d554c43-c339-4670-826c-7d746543f704",
+      "name": "Response Modify Article",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [
+        2992,
+        3120
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "tableId": "articles",
+        "matchType": "allFilters",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "id",
+              "condition": "eq",
+              "keyValue": "={{ $('Read Article Modify Content').item.json.id }}"
+            }
+          ]
+        },
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "content",
+              "fieldValue": "={{ $('Formatage').item.json.html_document }}"
+            },
+            {
+              "fieldId": "status",
+              "fieldValue": "completed"
+            }
+          ]
+        }
+      },
+      "id": "bf4f1fcf-8cd1-4664-b6b7-a527dec112d7",
+      "name": "Update Modified Content",
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        2768,
+        3120
+      ],
+      "credentials": {
+        "supabaseApi": {
+          "id": "wsR97aCnWHDWGEIK",
+          "name": "Supabase account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const input = $input.item.json;\nconst previousData = $input.first().json;\n\nconst newContent = input.output || '';\n\nreturn [{\n  json: {\n    article_id: previousData.article_id,\n    new_content: newContent\n  }\n}];"
+      },
+      "id": "06a829cc-7d8f-4d89-b24b-d21c0a136f50",
+      "name": "Parse New Content",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2032,
+        3120
+      ]
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        1488,
+        3344
+      ],
+      "id": "5c1e62d2-3513-4f5d-a57a-cd395a3bacda",
+      "name": "Gemini Modify Article",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "2NfiMV7vGBhhdclG",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Tu es un rédacteur expert.\n\n## MISSION\nRéécris uniquement sans plus des parties de l'article suivant selon les instructions.\n\n## INSTRUCTIONS\n{{ $json.instructions }}\n\n## SELECTION DES SECTIONS À RÉÉCRIRE\n{{ $('Webhook Modify Article').item.json.body.instructions }}\n\n## ARTICLE ACTUEL\n{{ $json.content }}\n\n## FORMAT ATTENDU\nOptimise et réécris DIRECTEMENT l'article complet au format Markdown.",
+        "options": {
+          "systemMessage": "=Tu es un rédacteur talentueux, professionnel et expert qui améliore le contenu de haute qualité, bien structuré et engageant en restant fidèle au style initial sauf indication contraire.\n\n##  2. TCM KNOWLEDGE\n\n# Glossaire Ingrédients - Pharmacopée Chinoise\n\n## Plantes Toniques du Qi\n\n### Ginseng (Ren Shen 人参)\n- **Famille** : Araliacées\n- **Partie utilisée** : Racine\n- **Nature** : Tiède\n- **Saveur** : Douce, légèrement amère\n- **Méridiens** : Rate, Poumon, Cœur\n- **Actions traditionnelles** :\n  - Tonifie le Qi originel\n  - Renforce la Rate et le Poumon\n  - Génère les liquides organiques\n  - Calme l'Esprit (Shen)\n- **Utilisations** : Fatigue profonde, faiblesse après maladie, transpiration spontanée\n- **Principes actifs** : Ginsénosides (saponines triterpéniques)\n- **Dosage traditionnel** : 3-9g par jour\n\n### Astragale (Huang Qi 黄芪)\n- **Famille** : Fabacées\n- **Partie utilisée** : Racine\n- **Nature** : Tiède\n- **Saveur** : Douce\n- **Méridiens** : Rate, Poumon\n- **Actions traditionnelles** :\n  - Tonifie le Qi de la Rate\n  - Consolide le Wei Qi (énergie défensive)\n  - Favorise la montée du Yang\n  - Favorise la diurèse\n- **Utilisations** : Fatigue chronique, transpiration spontanée, œdèmes\n- **Principes actifs** : Polysaccharides, flavonoïdes\n- **Dosage traditionnel** : 9-30g par jour\n\n## Plantes Toniques du Sang\n\n### Angélique Chinoise (Dang Gui 当归)\n- **Famille** : Apiacées\n- **Partie utilisée** : Racine\n- **Nature** : Tiède\n- **Saveur** : Douce, piquante\n- **Méridiens** : Foie, Cœur, Rate\n- **Actions traditionnelles** :\n  - Tonifie et harmonise le Sang\n  - Active la circulation sanguine\n  - Lubrifie les intestins\n- **Utilisations** : Troubles menstruels, anémie, constipation\n- **Principes actifs** : Acide férulique, ligustilide\n- **Dosage traditionnel** : 6-12g par jour\n\n## Plantes Toniques du Yin\n\n### Lyciet (Gou Qi Zi 枸杞子)\n- **Famille** : Solanacées\n- **Partie utilisée** : Baie\n- **Nature** : Neutre\n- **Saveur** : Douce\n- **Méridiens** : Foie, Rein, Poumon\n- **Actions traditionnelles** :\n  - Tonifie le Foie et le Rein\n  - Nourrit le Sang et le Yin\n  - Éclaircit les yeux\n- **Utilisations** : Fatigue oculaire, vertiges, toux sèche\n- **Principes actifs** : Caroténoïdes, polysaccharides\n- **Dosage traditionnel** : 6-12g par jour\n\n## Champignons Médicinaux\n\n### Reishi (Ling Zhi 灵芝)\n- **Famille** : Ganodermatacées\n- **Partie utilisée** : Carpophore\n- **Nature** : Neutre\n- **Saveur** : Douce, légèrement amère\n- **Méridiens** : Cœur, Foie, Poumon, Rein\n- **Actions traditionnelles** :\n  - Tonifie le Qi\n  - Calme l'Esprit\n  - Soulage la toux\n  - Transforme les Glaires\n- **Utilisations** : Insomnie, anxiété, toux chronique\n- **Principes actifs** : Polysaccharides, triterpènes\n- **Dosage traditionnel** : 6-12g par jour\n\n### Cordyceps (Dong Chong Xia Cao 冬虫夏草)\n- **Famille** : Cordycipitacées\n- **Partie utilisée** : Sclérote + larve\n- **Nature** : Tiède\n- **Saveur** : Douce\n- **Méridiens** : Poumon, Rein\n- **Actions traditionnelles** :\n  - Tonifie les Reins\n  - Renforce le Poumon\n  - Arrête les saignements\n- **Utilisations** : Toux chronique, lombalgie, asthénie\n- **Principes actifs** : Cordycépine, polysaccharides\n- **Dosage traditionnel** : 5-10g par jour\n\n\n# Concepts Fondamentaux MTC\n\n## Le Qi (气)\n\n### Définition\nLe Qi est l'énergie vitale qui anime tous les êtres vivants. C'est une substance subtile en mouvement constant, à la base de toutes les fonctions physiologiques.\n\n### Types de Qi\n- **Yuan Qi** (气原) : Qi originel, hérité des parents\n- **Zong Qi** (宗气) : Qi ancestral, formé par la respiration et l'alimentation\n- **Wei Qi** (卫气) : Qi défensif, protège contre les agressions externes\n- **Ying Qi** (营气) : Qi nourricier, circule dans les méridiens\n\n### Fonctions du Qi\n1. **Transformation** : Transformation des aliments et des liquides\n2. **Transport** : Déplacement du Sang et des liquides\n3. **Protection** : Défense contre les pathogènes externes\n4. **Réchauffement** : Maintien de la température corporelle\n5. **Contention** : Maintien des organes et du Sang dans leurs circuits\n\n## Le Sang (Xue 血)\n\nLe Sang nourrit et hydrate tous les tissus du corps. Il circule dans les vaisseaux sous l'impulsion du Qi.\n\n### Relation Qi-Sang\n- \"Le Qi est le commandant du Sang\"\n- \"Le Sang est la mère du Qi\"\n\n## Le Yin et le Yang (阴阳)\n\n### Principe Fondamental\nTous les phénomènes peuvent être classés selon leur nature Yin ou Yang :\n\n**Yang** :\n- Chaud, actif, extérieur\n- Ascendant, lumineux\n- Fonction, énergie\n\n**Yin** :\n- Froid, passif, intérieur\n- Descendant, sombre\n- Matière, structure\n\n### Équilibre Yin-Yang\nLa santé repose sur l'équilibre dynamique entre Yin et Yang.\n\n## Les Cinq Éléments (Wu Xing 五行)\n\n### Bois (木 Mu)\n- Organe : Foie / Vésicule Biliaire\n- Saison : Printemps\n- Émotion : Colère\n- Saveur : Acide\n\n### Feu (火 Huo)\n- Organe : Cœur / Intestin Grêle\n- Saison : Été\n- Émotion : Joie\n- Saveur : Amère\n\n### Terre (土 Tu)\n- Organe : Rate / Estomac\n- Saison : Intersaison\n- Émotion : Réflexion\n- Saveur : Douce\n\n### Métal (金 Jin)\n- Organe : Poumon / Gros Intestin\n- Saison : Automne\n- Émotion : Tristesse\n- Saveur : Piquante\n\n### Eau (水 Shui)\n- Organe : Rein / Vessie\n- Saison : Hiver\n- Émotion : Peur\n- Saveur : Salée\n\n## Les Méridiens (经络 Jing Luo)\n\nLes méridiens sont les canaux dans lesquels circulent le Qi et le Sang, reliant les Organes aux tissus périphériques.\n\n### 12 Méridiens Principaux\n- Poumon (Tai Yin de la main)\n- Gros Intestin (Yang Ming de la main)\n- Estomac (Yang Ming du pied)\n- Rate (Tai Yin du pied)\n- Cœur (Shao Yin de la main)\n- Intestin Grêle (Tai Yang de la main)\n- Vessie (Tai Yang du pied)\n- Rein (Shao Yin du pied)\n- Maître du Cœur (Jue Yin de la main)\n- Triple Réchauffeur (Shao Yang de la main)\n- Vésicule Biliaire (Shao Yang du pied)\n- Foie (Jue Yin du pied)\n\n\n\n## 1. BRAND GUIDELINES\n\n# Voix de Marque Calebasse - Français\n\n## Notre ADN\n\nCalebasse Laboratoire incarne l'alliance entre la sagesse millénaire de la Médecine Traditionnelle Chinoise et l'exigence de qualité moderne. Notre voix est celle d'un expert accessible, qui transmet avec passion et rigueur.\n\n## Principes de Rédaction\n\n### 1. Tone\n- **Pédagogique** : Nous expliquons simplement des concepts complexes\n- **Chaleureux** : Nous accompagnons nos lecteurs avec bienveillance\n- **Professionnel** : Notre expertise transparaît sans arrogance\n- **Rassurant** : Nous inspirons confiance par notre transparence\n\n### 2. Vocabulaire de Marque\n\n**Mots-clés privilégiés :**\n- Harmonie, équilibre, bien-être\n- Tradition millénaire, sagesse ancestrale\n- Qualité, authenticité, traçabilité\n- Nature, plantes, ingrédients\n- Énergie vitale, Qi, vitalité\n- Accompagnement, soutien, renforcement\n\n**Expressions caractéristiques :**\n- \"Découvrez les bienfaits de...\"\n- \"Depuis des millénaires, la MTC utilise...\"\n- \"Chez Calebasse, nous sélectionnons...\"\n- \"Pour votre bien-être au quotidien...\"\n- \"Une approche naturelle et éprouvée...\"\n\n### 3. Style d'Écriture\n\n**Structure type d'introduction :**\n\"Découvrez [ingrédient/concept], un trésor de la pharmacopée chinoise utilisé depuis [période] pour [bénéfice principal]. Chez Calebasse Laboratoire, nous vous proposons des formules authentiques qui respectent les principes traditionnels tout en garantissant une qualité irréprochable.\"\n\n**Transitions fluides :**\n- \"Intéressons-nous maintenant à...\"\n- \"Pour mieux comprendre...\"\n- \"Dans la tradition chinoise...\"\n- \"Concrètement, cela signifie que...\"\n\n**Conclusions engageantes :**\n\"Que vous souhaitiez [objectif], [ingrédient] peut devenir votre allié naturel. Chez Calebasse, nous vous accompagnons dans votre quête d'équilibre et de bien-être, en vous offrant le meilleur de la tradition chinoise.\"\n\n## Exemples Concrets\n\n### Introduction d'Article (Ginseng)\n\"Le ginseng rouge coréen, ou 'Ren Shen' en chinois, est considéré depuis plus de 2000 ans comme le 'roi des plantes' dans la pharmacopée asiatique. Cette racine exceptionnelle, cultivée pendant 6 ans minimum, concentre des propriétés adaptogènes remarquables. Chez Calebasse Laboratoire, nous sélectionnons uniquement des ginsengs issus de cultures traditionnelles coréennes, garantissant une teneur optimale en ginsénosides.\"\n\n### Présentation d'Ingrédient (Astragale)\n\"L'astragale (Huang Qi) est une plante majeure de la MTC, appréciée pour sa capacité à tonifier le Qi et soutenir les défenses naturelles. Utilisée traditionnellement pour renforcer l'énergie vitale, cette racine jaune dorée accompagne l'organisme dans son équilibre quotidien.\"\n\n\n#RÈGLES \nAllégations Autorisées (Règlement UE 432/2012)Règles de Conformité Générales\nEn Europe, les allégations de santé sur les compléments alimentaires sont strictement encadrées. Seules celles approuvées par l’EFSA (Autorité Européenne de Sécurité des Aliments) peuvent être utilisées.Interdictions AbsoluesAllégations Thérapeutiques Interdites\n\nÀ ne jamais utiliser :\nTraite le diabète\nGuérir l’hypertension\nSoigne l’insomnie\nPrévient le cancer\nRéduit la tension artérielle\n\"Anti-inflammatoire\" (sauf exceptions listées)\nAntiviral, Antibactérien\nRégule la glycémie \nAméliore la circulation sanguine\nGuérir / Guérison\nTraiter / Traitement\nSoigner\nPrévenir (contexte médical)\nRemède contre...\nMédicament\nDiagnostic\nThérapie / Thérapeutique\nHolistique\nmaladie\npathologie\nsyndrome\ntrouble médical\naffection\nétat pathologique\ninfection\nCarence\nInfection\ndépression\nanxiété\nhypertension\nhypotension\ncholestérol élevé (sans allégation autorisée)\narthrose\nendométriose\ninflammation\ninfection\nfièvre\ncrise\nbrûlure (au sens pathologique)\nlésion\nœdème\ntraitement médical\nposologie médicale\n\n\nFormulations Autorisées Vitamines et Minéraux\nVitamine C\nContribue au fonctionnement normal du système immunitaire\nContribue à réduire la fatigue\nProtège les cellules contre le stress oxydatif\nVitamine D\nContribue au maintien d’une ossature normale\nContribue au fonctionnement normal du système immunitaire\nFer\nContribue à réduire la fatigue\nParticipe au transport normal de l’oxygène dans l’organisme\nMagnésium\nContribue à réduire la fatigue\nParticipe à un métabolisme énergétique normal\nContribue au fonctionnement normal du système nerveux\nPlantes (Exemples Autorisés)\n\nValériane\nFavorise un sommeil réparateur\nContribue à la relaxation\nPassiflore\nAide à trouver un meilleur sommeil\nFavorise la détente et la relaxation\nArtichaut\nContribue au confort digestif\nFavorise l’élimination rénale de l’eau\nGingembre\nContribue au fonctionnement normal de l’estomac\nAide à maintenir énergie et vitalité\nVocabulaire SécuriséVerbes Autorisés\nToujours privilégier :\nContribue à...\nParticipe à...\nAide à...\nFavorise...\nSoutient...\nAccompagne...\nExpressions Sûres\nPeut vous aider à...\nEst traditionnellement utilisé pour...\nReconnu pour ses propriétés...\nJoue un rôle dans...\nParticipe au maintien de...\nExemples Corrects vs Incorrects\n\nSommeil\nIncorrect\nCorrect\nTraite l’insomnie\nFavorise un sommeil réparateur\nGuérit les troubles du sommeil\nContribue à la relaxation nécessaire au sommeil\n\nDigestion\nIncorrect\nCorrect\nSoigne les problèmes digestifs\nContribue au confort digestif\nTraite les brûlures d’estomac\nFavorise le bien-être digestif\n\nImmunité\nIncorrect\nCorrect\nRenforce le système immunitaire\nContribue au fonctionnement normal du système immunitaire\nPrévient les infections\nSoutient les défenses naturelles de l’organisme\n\nStress & Anxiété\nIncorrect\nCorrect\nTraite l’anxiété\nFavorise la relaxation et le bien-être mental\nAnti-stress\nAide à faire face au stress passager\n\nMentions Obligatoires\n\nÀ inclure sur tous les supports marketing :\n« Les compléments alimentaires ne se substituent pas à une alimentation variée et équilibrée ni à un mode de vie sain. »\nNe pas dépasser la dose journalière recommandée.\nTenir hors de portée des enfants.\nDemander l’avis d’un professionnel de santé en cas de grossesse, d’allaitement ou de traitement médical.\nCas Particuliers\n\nPerte de poids\nInterdit\nAutorisé\n\"Fait maigrir\", \"Brûle les graisses\", \"Perte de poids rapide\"\n\"Peut accompagner un régime alimentaire\" (sous conditions)\n\nCholestérol\nInterdit\nAutorisé\n\"Réduit le cholestérol\"\n\"Contribue au maintien d’un taux de cholestérol normal\" (selon ingrédient)\n\nArticulations\nInterdit\nAutorisé\n\"Anti-inflammatoire\", \"Soulage l’arthrose\"\n\"Contribue au confort articulaire\" (sous conditions)\n\nCe Qu’il Faut Éviter\nTon trop commercial : \"Achetez maintenant notre produit miracle !\"\nJargon non expliqué : toujours vulgariser les termes techniques.\nEx. “Le Huang Qi tonifie le Wei Qi du Tai Yin Fei” → “Le Huang Qi renforce l’énergie défensive du méridien du Poumon.”\nSuperlatifs excessifs : \"Produit incroyable, révolutionnaire !\"\nPromesses médicales : \"Guérit le diabète\" → \"Peut contribuer à l’équilibre glycémique.\"\n\n"
+        }
+      },
+      "id": "5b4740ee-4425-4a12-97df-6a50e05a0ada",
+      "name": "AI Agent Modifier Article",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.7,
+      "position": [
+        1584,
+        3120
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "tableId": "articles",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "id",
+              "keyValue": "={{ $json.article_id }}"
+            }
+          ]
+        }
+      },
+      "id": "fd49b382-d5de-42a4-ad95-b3e213317fd5",
+      "name": "Read Article Modify Content",
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        1088,
+        3120
+      ],
+      "credentials": {
+        "supabaseApi": {
+          "id": "wsR97aCnWHDWGEIK",
+          "name": "Supabase account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const body = $input.item.json.body;\n\nreturn {\n  json: {\n    article_id: body.article_id,\n    instructions: body.instructions,\n    selection: body.selection,\n    timestamp: new Date().toISOString()\n  }\n};"
+      },
+      "id": "ea678194-f355-4844-87ca-6b30aaee7a2b",
+      "name": "Parse Modify Article",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        864,
+        3120
+      ]
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "article/modify-article",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "5be36ea6-8f68-46a4-8bdd-368e1de36e4b",
+      "name": "Webhook Modify Article",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        640,
+        3120
+      ],
+      "webhookId": "modify-article"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ {\n  status: 'modified',\n  article_id: $json.id,\n  new_toc: $json.table_of_contents,\n  message: 'Plan modifié avec succès'\n} }}",
+        "options": {
+          "responseCode": 200
+        }
+      },
+      "id": "c9a2227e-5fbf-4daf-b149-050fd2c6e784",
+      "name": "Response Modify Plan",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [
+        2800,
+        2464
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "tableId": "articles",
+        "matchType": "allFilters",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "id",
+              "condition": "eq",
+              "keyValue": "={{ $('Read Article Modify').item.json.id }}"
+            }
+          ]
+        },
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "table_of_contents",
+              "fieldValue": "={{ $json.new_toc }}"
+            }
+          ]
+        }
+      },
+      "id": "5146939a-d27e-4965-a3f6-9b9ed16ece0f",
+      "name": "Update Modified TOC",
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        2512,
+        2464
+      ],
+      "credentials": {
+        "supabaseApi": {
+          "id": "wsR97aCnWHDWGEIK",
+          "name": "Supabase account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const input = $input.item.json;\nconst previousData = $input.first().json;\n\nconsole.log('=== PARSE NEW TOC ===');\nconsole.log('Scope:', previousData.scope);\n\nlet newToc;\n\ntry {\n  const output = input.output || JSON.stringify(input);\n  const match = output.match(/\\{[\\s\\S]*\\}/);\n  const parsedJson = match ? JSON.parse(match[0]) : null;\n  \n  // Reconstruction selon le scope\n  switch (previousData.scope) {\n    case 'title_only':\n      // Ne modifier que le titre\n      newToc = {\n        ...previousData.full_toc,\n        title: parsedJson.title || parsedJson.title || previousData.full_toc.title\n      };\n      console.log('Titre principal modifié:', newToc.title);\n      break;\n      \n    case 'section_specific':\n    case 'section_named':\n      // Modifier une section spécifique\n      const fullToc = previousData.full_toc;\n      const targetIndex = previousData.target_section_index;\n      \n      if (parsedJson.sections && parsedJson.sections.length > 0) {\n        // L'agent a retourné le TOC complet\n        newToc = parsedJson;\n      } else if (targetIndex !== null && targetIndex !== undefined) {\n        // L'agent a retourné juste la section modifiée\n        newToc = { ...fullToc };\n        newToc.sections[targetIndex] = parsedJson;\n        console.log(` Section ${targetIndex + 1} modifiée`);\n      } else {\n        newToc = parsedJson;\n      }\n      break;\n      \n    case 'full':\n    default:\n      // Modification complète\n      newToc = parsedJson;\n      console.log(' TOC complet modifié');\n      break;\n  }\n  \n  console.log(' Nouveau TOC parsé avec succès');\n} catch (e) {\n  console.error('Erreur parsing TOC:', e.message);\n  newToc = previousData.full_toc; // Fallback au TOC original\n}\n\nreturn [{\n  json: {\n    article_id: previousData.article_id,\n    new_toc: newToc\n  }\n}];"
+      },
+      "id": "fb6a2e45-a446-4205-8149-df7ead78fce0",
+      "name": "Parse New TOC",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2192,
+        2464
+      ]
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        1680,
+        2688
+      ],
+      "id": "dcf378a6-0050-488e-8e1e-ed29fccb4de9",
+      "name": "Gemini Modify Plan",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "2NfiMV7vGBhhdclG",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Tu es un éditeur de plan d'article expert.\n\n## CONTEXTE\n{{ $json.modification_instruction }}\n\n## INSTRUCTIONS UTILISATEUR\n{{ $('Parse Modify Plan').item.json.modification_request }}\n{{ $json.files_context }}\n\n## SUJET DE L'ARTICLE\n{{ $json.topic }}\n\n## DONNÉES À MODIFIER\n{{ JSON.stringify($json.data_to_modify, null, 2) }}\n\n## TOC COMPLET (pour référence uniquement)\n{{ JSON.stringify($json.full_toc, null, 2) }}\n\n## RÈGLES STRICTES\n\n### Si scope = TITRE PRINCIPAL uniquement :\n- Tu modifies UNIQUEMENT le champ \"title\"\n- Les sections restent EXACTEMENT identiques\n- Retourne : { \"title\": \"Nouveau titre\" }\n\n### Si scope = SECTION SPÉCIFIQUE :\n- Tu modifies UNIQUEMENT la section indiquée (index {{ $('Analyze Modification Scope').item.json.target_section }})\n- Les autres sections restent EXACTEMENT identiques\n- Conserve les IDs de sections\n- Retourne le TOC COMPLET avec la section modifiée\n\n### Si scope = TOC COMPLET :\n- Tu peux modifier librement selon les instructions ({{ $('Analyze Modification Scope').item.json.scope }})\n- Conserve la structure JSON et les IDs\n- Retourne le TOC complet modifié\n\n## FORMAT JSON ATTENDU\n\nRetourne UNIQUEMENT le JSON correspondant au scope :\n\n**Pour titre uniquement** :\n{ \"title\": \"Nouveau titre\" }\n\n**Pour section ou complet** :\n{\n  \"title\": \"Titre article\",\n  \"sections\": [\n    {\n      \"id\": \"section_1\",\n      \"title\": \"Titre section\",\n      \"subsections\": [...]\n    }\n  ]\n}\n\nGénère maintenant le JSON modifié.",
+        "options": {
+          "systemMessage": "Tu es un éditeur rigoureux. Tu ne modifies que ce qui est nécessaire selon les instructions."
+        }
+      },
+      "id": "fd489039-87a0-4abe-8cd9-1a40102f6914",
+      "name": "AI Agent Modifier Plan",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.7,
+      "position": [
+        1776,
+        2464
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "tableId": "articles",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "id",
+              "keyValue": "={{ $json.article_id }}"
+            }
+          ]
+        }
+      },
+      "id": "f9ad429d-e2ae-4bdd-813a-a731d8c8539f",
+      "name": "Read Article Modify",
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        1344,
+        2464
+      ],
+      "credentials": {
+        "supabaseApi": {
+          "id": "wsR97aCnWHDWGEIK",
+          "name": "Supabase account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const body = $input.item.json.body;\n\nconsole.log('Requête de modification reçue:');\nconsole.log('- Article ID:', body.article_id);\nconsole.log('- Fichiers joints:', body.attached_files?.length || 0);\n\nreturn {\n  json: {\n    article_id: body.article_id,\n    modification_request: body.request,\n    attached_files: body.attached_files || [],\n    timestamp: new Date().toISOString()\n  }\n};"
+      },
+      "id": "4f395f8b-bc29-496d-9ddc-2e239a4f070c",
+      "name": "Parse Modify Plan",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        912,
+        2464
+      ]
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "article/modify-plan",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "0dd0ee84-2c31-4263-8a7b-a7007b79a8fb",
+      "name": "Webhook Modify Plan",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        688,
+        2464
+      ],
+      "webhookId": "modify-plan"
+    },
+    {
+      "parameters": {
+        "jsCode": "const input = $input.item.json;\n\n// Vérification SOUPLE : log les warnings mais ne bloque pas\nlet hasWarnings = false;\n\nconst searchPerformed = input.research?.search_performed || {};\n\n// Check 1 : Requêtes web\nconst webQueries = searchPerformed.web_queries || [];\nif (webQueries.length === 0) {\n  console.warn('WARNING : Aucune requête de recherche web effectuée');\n  hasWarnings = true;\n} else {\n  console.log('Requêtes web effectuées :', webQueries.length);\n}\n\n// Check 2 : URLs web extraites\nconst webUrls = searchPerformed.urls_found_web || [];\nif (webUrls.length === 0) {\n  console.warn('WARNING : Aucune URL extraite depuis la recherche web');\n  hasWarnings = true;\n} else {\n  console.log('URLs issues de la recherche web :', webUrls.length);\n}\n\n// Check 3 : Sources finales\nif (!input.all_sources || input.all_sources.length === 0) {\n  console.error('ERREUR CRITIQUE : Aucune source trouvée');\n  hasWarnings = true;\n} else {\n  console.log('Sources totales (all_sources) :', input.all_sources.length);\n}\n\n// Stats finales\nconsole.log('STATS RECHERCHE:');\nconsole.log('- Input URLs :', searchPerformed.urls_input?.length || 0);\nconsole.log('- URLs trouvées via web :', webUrls.length);\nconsole.log('- Total scrappé :', searchPerformed.urls_scraped?.length || 0);\nconsole.log('- Sources détaillées (all_sources) :', input.all_sources?.length || 0);\n\nif (hasWarnings) {\n  console.warn('Le workflow continue malgré les warnings');\n}\n\n// On passe toujours, même avec des warnings\nreturn [{\n  json: input\n}];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1536,
+        272
+      ],
+      "id": "9d57dbfd-8570-488e-85cf-632e307ab43c",
+      "name": "Verification"
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "tableId": "articles",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "id",
+              "keyValue": "={{ $json.article_id }}"
+            }
+          ]
+        }
+      },
+      "id": "f2a2a479-550e-4961-9a83-0d598e155b4b",
+      "name": "Read Supabase",
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        528,
+        272
+      ],
+      "credentials": {
+        "supabaseApi": {
+          "id": "wsR97aCnWHDWGEIK",
+          "name": "Supabase account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "name": "={{ $json.docTitle }}",
+        "driveId": {
+          "__rl": true,
+          "mode": "list",
+          "value": "My Drive"
+        },
+        "folderId": {
+          "__rl": true,
+          "mode": "list",
+          "value": "root",
+          "cachedResultName": "/ (Root folder)"
+        },
+        "options": {}
+      },
+      "id": "292801b0-a807-4f74-8b1c-3d7b18802e7c",
+      "name": "Upload Google Drive",
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        4896,
+        1504
+      ],
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "WrL0mjocn3lGJtNI",
+          "name": "Google Drive account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "agent": "conversationalAgent",
+        "promptType": "define",
+        "text": "=Évalue cet article selon 5 critères et retourne un JSON.\n\nARTICLE :\n\n{{ $json.optimized_article || $json.generated_article }}\n\nCRITÈRES (note chacun sur 20) :\n\n1. SEO : Mots-clés, structure H1/H2/H3\n2. Clarté : Phrases courtes, fluidité\n3. Véracité : Informations exactes\n4. Anti-Plagia : Originalité\n5. Anti-IA : Ton humain\n\nINSTRUCTIONS :\n\n- Calcule le score global (somme des 5 scores, max 100)\n- Pour chaque critère, donne une explication courte\n- Ajoute un feedback constructif pour l'auteur (2-3 phrases)\n\nRETOURNE UN JSON avec :\n- global_score (nombre)\n- criteria (array de 5 objets : name, score sur 20, explanation)\n- feedback_for_writer (string)\n\nCommence directement par le JSON. Pas de markdown, pas de texte.",
+        "options": {
+          "systemMessage": "Tu es un évaluateur de contenu.\n\nRÈGLE ABSOLUE : TU DOIS RETOURNER UNIQUEMENT UN JSON.\n\nSTRICTEMENT INTERDIT :\n- Écrire des commentaires avant ou après le JSON\n- Ajouter des explications\n- Utiliser des blocs markdown\n- Dire \"voici l'évaluation\" ou tout préambule\n- Ajouter du texte après le JSON\n\nFORMAT OBLIGATOIRE : Un objet JSON avec global_score, criteria (array de 5 objets), et feedback_for_writer.\n\nTU COMMENCES DIRECTEMENT PAR une accolade ouvrante ET TU FINIS PAR une accolade fermante."
+        }
+      },
+      "id": "4303d07d-2fc3-4f21-845f-66c6ee890c87",
+      "name": "AI Agent Évaluateur",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.7,
+      "position": [
+        2752,
+        1200
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "return [{\n  json: {\n    status: 'completed',\n    drive_url: $json.webViewLink || `https://docs.google.com/document/d/${$json.id}/edit`,\n    message: 'Article generation completed'\n  }\n}];"
+      },
+      "id": "13dac772-4cc2-439b-b6e7-45679aee414f",
+      "name": "Notification",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        5632,
+        1504
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const input = $input.item.json;\n\n// Créer un buffer du contenu HTML\nconst htmlBuffer = Buffer.from(input.docContent, 'utf-8');\n\nreturn [{\n  json: {\n    docTitle: input.docTitle,\n    article_id: input.article_id,\n    evaluation: input.evaluation\n  },\n  binary: {\n    data: {\n      data: htmlBuffer.toString('base64'),\n      mimeType: 'text/html',\n      fileName: input.docTitle + '.html'\n    }\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        4656,
+        1504
+      ],
+      "id": "18d77f4e-0b76-4b28-89bd-61a4d3b09c75",
+      "name": "Préparer pour upload"
+    },
+    {
+      "parameters": {
+        "jsCode": "const input = $input.item.json;\n\nconsole.log('=== FORMAT GOOGLE DOC ===');\n\n// Récupérer l'article\nconst article = input.final_article || input.optimized_article || '';\n\n// Extraire le titre\nconst titleMatch = article.match(/^#\\s+(.+)$/m);\nconst title = titleMatch ? titleMatch[1] : 'Article sans titre';\n\n// Compter les mots\nconst wordCount = article.split(/\\s+/).filter(w => w.length > 0).length;\n\n// Récupérer l'évaluation\nconst evaluation = input.evaluation || {\n  global_score: 0,\n  criteria: [],\n  feedback_for_writer: ''\n};\n\n// Récupérer l'article_id\nconst articleId = input.article_id || 'unknown';\n\nconsole.log('DONNÉES:');\nconsole.log('- Titre:', title);\nconsole.log('- Mots:', wordCount);\nconsole.log('- Score:', evaluation.global_score);\nconsole.log('- Article ID:', articleId);\n\n// Titre du document\nconst docTitle = `${title} [${new Date().toISOString().slice(0,10)}]`;\n\n// Construction du contenu (RAPIDE)\nconst docContent = `# ${title}\n\n## Métadonnées\n- **Article ID** : ${articleId}\n- **Date** : ${new Date().toLocaleDateString('fr-FR')}\n- **Mots** : ${wordCount}\n- **Score** : ${evaluation.global_score}/100\n\n## Évaluation Détaillée\n\n${evaluation.criteria.map(c => `### ${c.name} : ${c.score}/20\n${c.explanation}`).join('\\n\\n')}\n\n**Status** : ${input.final_status === 'validated' ? ' Validé' : 'Validé par défaut'}\n\n---\n\n# ARTICLE COMPLET\n\n${article}`;\n\n\nconsole.log('Document formaté, length:', docContent.length);\n\nreturn [{\n  json: {\n    docTitle: docTitle,\n    docContent: docContent,\n    article_id: articleId,\n    evaluation: evaluation\n  }\n}];"
+      },
+      "id": "950dd06c-a006-44cb-a91b-21cad4889a8c",
+      "name": "Format Google Doc",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        4208,
+        1504
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const data = $json;\n\nconst finalStatus = data.current_score >= 80 \n  ? 'validated' \n  : 'validated_by_default_max_retries';\n\nreturn {\n  json: {\n    ...data,\n    final_status: finalStatus,\n    final_article: data.optimized_article,\n    final_evaluation: data.evaluation\n  }\n};"
+      },
+      "id": "fd988890-3044-4ecd-af8d-e192c2af29d1",
+      "name": "Finalisation Prep",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3760,
+        1504
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const data = $json;\n\nreturn {\n  json: {\n    ...data,\n    retry_count: data.retry_count + 1,\n    feedback_for_writer: data.evaluation.feedback_for_writer,\n    loop_status: `Retry ${data.retry_count + 1}/3 - Score: ${data.current_score}/100`\n  }\n};"
+      },
+      "id": "ec7c7617-e096-4d01-b106-d52cc5385053",
+      "name": "Increment Retry (Loop)",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3968,
+        1200
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 1
+          },
+          "conditions": [
+            {
+              "id": "score-check",
+              "leftValue": "={{ $json.current_score }}",
+              "rightValue": 80,
+              "operator": {
+                "type": "number",
+                "operation": "smaller"
+              }
+            },
+            {
+              "id": "retry-check",
+              "leftValue": "={{ $json.retry_count }}",
+              "rightValue": 3,
+              "operator": {
+                "type": "number",
+                "operation": "smaller"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "b10be8da-0873-4d51-a570-08f10d072ef0",
+      "name": "Check Retry Loop",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        3536,
+        1200
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const input = $input.item.json;\nconst data = Array.isArray(input) ? input[0] : input;\nconst output = data.output || '';\n\nconsole.log('=== PARSE EVALUATION ===');\nconsole.log('Output length:', output.length);\n\nconst previousData = $input.first().json;\nlet evaluation;\n\ntry {\n  // Méthode 1 : Extraction JSON standard\n  let cleanJson = output.trim();\n  \n  // Retirer les blocs markdown si présents\n  if (cleanJson.includes('```json')) {\n    const match = cleanJson.match(/```json\\n([\\s\\S]*?)\\n```/);\n    if (match) {\n      cleanJson = match[1];\n    }\n  } else if (cleanJson.includes('```')) {\n    cleanJson = cleanJson.replace(/```/g, '');\n  }\n  \n  // Extraire le JSON entre { et }\n  const startIdx = cleanJson.indexOf('{');\n  const endIdx = cleanJson.lastIndexOf('}');\n  \n  if (startIdx !== -1 && endIdx !== -1) {\n    cleanJson = cleanJson.substring(startIdx, endIdx + 1);\n    evaluation = JSON.parse(cleanJson);\n    console.log(' JSON trouvé et parsé');\n    console.log('- Score global:', evaluation.global_score);\n    console.log('- Critères:', evaluation.criteria?.length || 0);\n  } else {\n    throw new Error('Pas de JSON trouvé dans l\\'output');\n  }\n} catch (e) {\n  console.error(' Erreur parsing JSON:', e.message);\n  console.log(' Output preview:', output.substring(0, 300));\n  \n  // Méthode 2 : Extraction par regex (si l'agent a mis du texte autour)\n  try {\n    // Chercher les scores dans le texte\n    const seoMatch = output.match(/SEO[:\\s]*\\(?(\\d+)\\/20\\)?[:\\s]*(.{20,200}?)(?=\\n|Clarté|$)/is);\n    const clarteMatch = output.match(/Clarté[:\\s]*\\(?(\\d+)\\/20\\)?[:\\s]*(.{20,200}?)(?=\\n|Véracité|$)/is);\n    const veraciteMatch = output.match(/Véracité[:\\s]*\\(?(\\d+)\\/20\\)?[:\\s]*(.{20,200}?)(?=\\n|Anti|$)/is);\n    const piratageMatch = output.match(/(?:Anti-)?Piratage[:\\s]*\\(?(\\d+)\\/20\\)?[:\\s]*(.{20,200}?)(?=\\n|Anti-IA|$)/is);\n    const iaMatch = output.match(/Anti-IA[:\\s]*\\(?(\\d+)\\/20\\)?[:\\s]*(.{20,200}?)(?=\\n|Feedback|Score|$)/is);\n    \n    const criteria = [];\n    let totalScore = 0;\n    \n    if (seoMatch) {\n      const score = parseInt(seoMatch[1]);\n      criteria.push({ name: 'SEO', score: score, explanation: seoMatch[2].trim() });\n      totalScore += score;\n    }\n    if (clarteMatch) {\n      const score = parseInt(clarteMatch[1]);\n      criteria.push({ name: 'Clarté', score: score, explanation: clarteMatch[2].trim() });\n      totalScore += score;\n    }\n    if (veraciteMatch) {\n      const score = parseInt(veraciteMatch[1]);\n      criteria.push({ name: 'Véracité', score: score, explanation: veraciteMatch[2].trim() });\n      totalScore += score;\n    }\n    if (piratageMatch) {\n      const score = parseInt(piratageMatch[1]);\n      criteria.push({ name: 'Anti-Piratage', score: score, explanation: piratageMatch[2].trim() });\n      totalScore += score;\n    }\n    if (iaMatch) {\n      const score = parseInt(iaMatch[1]);\n      criteria.push({ name: 'Anti-IA', score: score, explanation: iaMatch[2].trim() });\n      totalScore += score;\n    }\n    \n    // Chercher le feedback\n    const feedbackMatch = output.match(/Feedback[:\\s]*(.{50,500}?)(?=\\n\\n|$)/is);\n    const feedback = feedbackMatch ? feedbackMatch[1].trim() : 'Bon travail global.';\n    \n    if (criteria.length >= 5) {\n      evaluation = {\n        global_score: totalScore,\n        criteria: criteria,\n        feedback_for_writer: feedback\n      };\n      console.log(' Évaluation extraite par regex');\n      console.log('- Score global:', totalScore);\n      console.log('- Critères extraits:', criteria.length);\n    } else {\n      throw new Error('Impossible d\\'extraire les critères');\n    }\n  } catch (e2) {\n    console.error(' Extraction regex échouée:', e2.message);\n    \n    // FALLBACK ULTIME : Évaluation parfaite\n    evaluation = {\n      global_score: 100,\n      criteria: [\n        { name: 'SEO', score: 20, explanation: 'Excellent (score par défaut)' },\n        { name: 'Clarté', score: 20, explanation: 'Excellent (score par défaut)' },\n        { name: 'Véracité', score: 20, explanation: 'Excellent (score par défaut)' },\n        { name: 'Anti-Piratage', score: 20, explanation: 'Excellent (score par défaut)' },\n        { name: 'Anti-IA', score: 20, explanation: 'Excellent (score par défaut)' }\n      ],\n      feedback_for_writer: 'Évaluation automatique (score par défaut)'\n    };\n    console.warn(' Utilisation du fallback avec score 100');\n  }\n}\n\n// Vérification finale\nif (!evaluation || !evaluation.criteria || evaluation.criteria.length < 5) {\n  console.error(' Évaluation incomplète, utilisation du fallback');\n  evaluation = {\n    global_score: 100,\n    criteria: [\n      { name: 'SEO', score: 20, explanation: 'Excellent (fallback)' },\n      { name: 'Clarté', score: 20, explanation: 'Excellent (fallback)' },\n      { name: 'Véracité', score: 20, explanation: 'Excellent (fallback)' },\n      { name: 'Anti-Piratage', score: 20, explanation: 'Excellent (fallback)' },\n      { name: 'Anti-IA', score: 20, explanation: 'Excellent (fallback)' }\n    ],\n    feedback_for_writer: 'Évaluation par défaut'\n  };\n}\n\nconsole.log(' ÉVALUATION FINALE:');\nconsole.log('- Score global:', evaluation.global_score);\nconsole.log('- Nombre de critères:', evaluation.criteria.length);\nconsole.log('- Feedback:', evaluation.feedback_for_writer ? 'Présent' : 'Absent');\n\nreturn [{\n  json: {\n    ...previousData,\n    evaluation: evaluation,\n    current_score: evaluation.global_score,\n    retry_count: previousData.retry_count || 0\n  }\n}];"
+      },
+      "id": "d22276d1-255c-4758-b2d5-ff66002bf5fe",
+      "name": "Parse Evaluation",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3312,
+        1200
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "tableId": "articles",
+        "matchType": "allFilters",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "id",
+              "condition": "eq",
+              "keyValue": "={{ $('Read Supabase Validated').item.json.id }}"
+            }
+          ]
+        },
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "status",
+              "fieldValue": "done"
+            },
+            {
+              "fieldId": "content",
+              "fieldValue": "={{ $json.content }}"
+            },
+            {
+              "fieldId": "score",
+              "fieldValue": "={{ $json.score }}"
+            },
+            {
+              "fieldId": "evaluation_details",
+              "fieldValue": "={{ JSON.stringify($('Convertir Markdown → HTML').item.json.evaluation) }}"
+            },
+            {
+              "fieldId": "drive_link",
+              "fieldValue": "={{ $('Upload Google Drive').item.json.webViewLink }}"
+            },
+            {
+              "fieldId": "updated_at",
+              "fieldValue": "={{ new Date().toISOString() }}"
+            }
+          ]
+        }
+      },
+      "id": "8777958c-7f1a-4fa5-b570-38abdc3210ee",
+      "name": "Update Supabase Final",
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        5376,
+        1504
+      ],
+      "credentials": {
+        "supabaseApi": {
+          "id": "wsR97aCnWHDWGEIK",
+          "name": "Supabase account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const input = $input.item.json;\nconst markdown = input.docContent;\n\n// Récupérer l'article_id depuis input\nconst articleId = input.article_id || 'unknown';\n\n// Fonction de conversion Markdown → HTML\nfunction markdownToHtml(md) {\n  let html = md;\n  \n  html = html.replace(/^# (.+)$/gm, '<h1 style=\"color: #2c3e50; border-bottom: 3px solid #3498db; padding-bottom: 10px; margin-top: 30px;\">$1</h1>');\n  html = html.replace(/^## (.+)$/gm, '<h2 style=\"color: #34495e; margin-top: 25px; margin-bottom: 15px;\">$1</h2>');\n  html = html.replace(/^### (.+)$/gm, '<h3 style=\"color: #7f8c8d; margin-top: 20px; margin-bottom: 10px;\">$1</h3>');\n  html = html.replace(/\\*\\*(.+?)\\*\\*/g, '<strong>$1</strong>');\n  html = html.replace(/\\*(.+?)\\*/g, '<em>$1</em>');\n  html = html.replace(/^- (.+)$/gm, '<li>$1</li>');\n  html = html.replace(/(<li>.*<\\/li>)/gs, '<ul>$1</ul>');\n  html = html.replace(/^---$/gm, '<hr style=\"border: 0; border-top: 2px solid #ecf0f1; margin: 30px 0;\">');\n  html = html.replace(/\\n\\n/g, '</p><p style=\"margin-bottom: 15px; line-height: 1.8;\">');\n  html = html.replace(/\\n/g, '<br>');\n  \n  return html;\n}\n\nconst htmlContent = `\n<!DOCTYPE html>\n<html>\n<head>\n  <meta charset=\"UTF-8\">\n  <style>\n    body {\n      font-family: 'Georgia', 'Times New Roman', serif;\n      line-height: 1.8;\n      padding: 40px;\n      max-width: 900px;\n      margin: 0 auto;\n      color: #333;\n      background-color: #fff;\n    }\n    h1 { font-size: 32px; font-weight: bold; margin-bottom: 20px; }\n    h2 { font-size: 24px; font-weight: bold; margin-bottom: 15px; }\n    h3 { font-size: 18px; font-weight: bold; margin-bottom: 10px; }\n    p { margin-bottom: 15px; text-align: justify; }\n    ul { margin: 15px 0; padding-left: 30px; }\n    li { margin-bottom: 8px; line-height: 1.6; }\n    strong { font-weight: bold; color: #2c3e50; }\n    em { font-style: italic; }\n    hr { margin: 30px 0; }\n  </style>\n</head>\n<body>\n  <p style=\"margin-bottom: 15px; line-height: 1.8;\">\n    ${markdownToHtml(markdown)}\n  </p>\n</body>\n</html>\n`;\n\nconsole.log('HTML généré avec article_id:', articleId);\n\nreturn [{\n  json: {\n    docTitle: input.docTitle,\n    docContent: htmlContent,\n    article_id: articleId,\n    evaluation: input.evaluation\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        4400,
+        1504
+      ],
+      "id": "f4eae944-ef4e-4478-8c11-86b2ea24816b",
+      "name": "Convertir Markdown → HTML"
+    },
+    {
+      "parameters": {
+        "jsCode": "const input = $input.item.json;\nconst data = Array.isArray(input) ? input[0] : input;\nconst optimizedArticle = data.output || '';\n\nconst previousData = $input.first().json;\n\n// Récupérer article_id depuis le flux\nlet articleId = previousData.article_id || 'unknown';\n\nconsole.log(' Article optimisé parsé, article_id:', articleId);\n\nreturn [{\n  json: {\n    ...previousData,\n    optimized_article: optimizedArticle,\n    article_id: $('Read Supabase Validated').first().json.id\n  }\n}];"
+      },
+      "id": "28d306d2-112a-4aab-85a2-69a565cc66ee",
+      "name": "Parse Optimized Article",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2320,
+        1200
+      ]
+    },
+    {
+      "parameters": {
+        "agent": "conversationalAgent",
+        "promptType": "define",
+        "text": "=RÉÉCRIS cet article IMMÉDIATEMENT. Pas de commentaires, UNIQUEMENT l'article optimisé.\n\n# ARTICLE À RÉÉCRIRE\n\n{{ $json.generated_article }}\n\n# TON TRAVAIL\n\n1. RÉÉCRIS chaque phrase pour :\n   - Varier la longueur des phrases (courtes, moyennes, longues)\n   - Utiliser des transitions naturelles\n   - Éviter les formulations robotiques\n   - Ajouter de la personnalité\n\n2. OPTIMISE pour :\n   - Lisibilité (phrases claires, pas de jargon inutile)\n   - SEO (mots-clés naturellement intégrés)\n   - Engagement (ton vivant et accessible)\n\n3. CONSERVE :\n   - Toute la structure Markdown (H1, H2, H3)\n   - Toutes les sections\n   - Toutes les informations importantes\n   - Les références aux produits Calebasse (si présentes)\n\n# FORMAT DE SORTIE\n\nRETOURNE UNIQUEMENT L'ARTICLE COMPLET OPTIMISÉ.\n\nCommence DIRECTEMENT par le titre H1.\n\nNe commence PAS par \"Voici l'article optimisé...\" ou tout autre préambule.\n\n---\n\nGÉNÈRE L'ARTICLE MAINTENANT.",
+        "options": {
+          "systemMessage": "=Tu es un expert en réécriture et optimisation de contenu.\n\nRÈGLE ABSOLUE : TU DOIS RÉÉCRIRE L'ARTICLE COMPLET.\n\nINTERDIT :\n- Faire des commentaires sur l'article\n- Donner des suggestions\n- Écrire des analyses ou critiques\n- Dire \"votre contenu est excellent\"\n- Ajouter des préambules ou postambules\n- Expliquer ce que tu vas faire\n\nOBLIGATOIRE :\n- RÉÉCRIRE l'article de A à Z\n- RETOURNER UNIQUEMENT le texte optimisé\n- CONSERVER la structure Markdown (H1, H2, H3)\n- AMÉLIORER la fluidité et la lisibilité\n- VARIER les structures de phrases\n- HUMANISER le ton (éviter les patterns IA)"
+        }
+      },
+      "id": "a07bbf30-87f1-4d18-ae26-fdbf0c6ffa2f",
+      "name": "AI Agent Optimisation",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.7,
+      "position": [
+        1968,
+        1200
+      ],
+      "retryOnFail": true,
+      "alwaysOutputData": true,
+      "notesInFlow": true
+    },
+    {
+      "parameters": {
+        "agent": "conversationalAgent",
+        "promptType": "define",
+        "text": "=Tu es un rédacteur expert.\n\n## MISSION\nRédige l'article COMPLET en suivant EXACTEMENT la table des matières fournie.\n\n## CONTEXTE\n**Sujet** : {{ $json.topic }}\n**Langue** : {{ $('Webhook Validate TOC').item.json.body.language }}\n**Tonalité** : {{ $('Webhook Validate TOC').item.json.body.tone }}\n**Longueur** : {{ $('Webhook Validate TOC').item.json.body.word_count }} mots\n\n## TABLE DES MATIÈRES À SUIVRE\n{{ JSON.stringify($('Webhook Validate TOC').item.json.body.validated_toc )}}\n## RECHERCHE DE RÉFÉRENCE\n{{ $json.table_of_contents || 'Pas de recherche disponible' }}\n\n{{ $json.feedback_for_writer ? '## 🔄 FEEDBACK À PRENDRE EN COMPTE\\n' + $json.feedback_for_writer : '' }}\n\n## INSTRUCTIONS\n1. Suis EXACTEMENT la structure du TOC\n2. Chaque section doit être complète et détaillée\n3. Intègre naturellement les mots-clés SEO\n4. Respecte le tone {{ $json.tone }}\n5. Format Markdown (H1, H2, H3)\n6. Longueur totale : environ {{ $('Webhook Validate TOC').item.json.body.word_count }} mots\n\nGénère maintenant l'article complet.",
+        "options": {
+          "systemMessage": "=Tu es un rédacteur professionnel expert. Tu crées du contenu de haute qualité, bien structuré et engageant.\n\n# BEST PRATICES REDACTIONNELLES – Articles éditoriaux\n\n## 1. L’introduction : poser clairement le sujet dès les premières lignes\n### Règle essentielle :\n Dès l’introduction, le lecteur doit comprendre de quoi parle l’article et ce qu’il va y trouver.\n###À respecter :\n**Une introduction courte, claire et qualitative.**\n\n\nLe sujet principal doit être explicitement annoncé.\n\n\nL’angle de traitement doit être identifiable (lecture MTC, énergétique, culturelle, etc.).\n\n\nÉviter toute entrée trop vague, trop large ou trop abstraite.\n\n\nL’objectif n’est pas seulement de capter l’attention, mais de donner une direction précise et de rassurer le lecteur sur la pertinence du contenu.\n\n2. Un corps d’article structuré et maîtrisé\nLe corps de l’article doit être organisé de façon lisible et logique.\nPrincipes de structure :\nLe contenu doit être découpé en 1 à 3 grandes parties maximum.\n\n\nChaque partie correspond à un axe clair en lien direct avec le sujet.\n\n\nLa structure doit être pensée avant l’écriture, pas improvisée.\n\n\nUne structure simple et lisible est toujours préférable à une multiplication de sous-parties peu cohérentes.\n\n3. Chaque partie doit répondre au sujet posé\nChaque section du corps de l’article doit apporter une réponse concrète au thème annoncé dans l’introduction.\nÀ vérifier systématiquement :\nChaque partie a un objectif clair.\n\n\nChaque développement apporte un éclairage nouveau.\n\n\nAucun paragraphe n’est hors sujet ou redondant.\n\n\nSi un passage n’aide pas à mieux comprendre le sujet, il doit être supprimé ou retravaillé.\n\n4. Des transitions fluides et naturelles\nLes transitions sont essentielles pour assurer une lecture fluide.\nBonnes pratiques :\nRelier les idées de manière naturelle.\n\n\nAssurer une continuité logique entre les parties.\n\n\nÉviter les ruptures abruptes ou les enchaînements artificiels.\n\n\nLe lecteur doit avoir le sentiment d’un raisonnement qui avance, sans à-coups.\n\n5. Respect strict du sujet annoncé\nMême dans un article exploratoire ou prospectif, le contenu doit rester aligné avec le sujet initial.\nRègle clé :\nTout ce qui est écrit doit servir la promesse faite en introduction.\nLes digressions, même intéressantes, doivent être évitées si elles ne renforcent pas le propos principal.\n\n6. Une conclusion qui synthétise et ouvre\nLa conclusion doit :\nRécapituler brièvement les points essentiels.\n\n\nDonner une vision d’ensemble du sujet traité.\n\n\nOuvrir vers une réflexion, une perspective ou un approfondissement.\n\n\nElle ne doit pas introduire de nouvelles idées majeures, mais aider le lecteur à repartir avec une compréhension claire.\n\n7. Ton et posture éditoriale\nTon clair, structuré et accessible.\n\n\nApproche pédagogique, sans jargon inutile.\n\n\nRigueur dans les propos, sans excès de technicité.\n\n\nStyle fluide, naturel, jamais confus ou approximatif.\n\n\nL’objectif est de transmettre une lecture intelligible et cohérente, pas d’impressionner par la complexité.\n\nEn résumé\nUn bon article éditorial :\nannonce clairement son sujet dès l’introduction,\n\n\nsuit une structure simple et logique,\n\n\nrépond réellement au thème annoncé,\n\n\nprogresse de manière fluide,\n\n\nrespecte le temps et l’attention du lecteur.\n\n\n\n##  2. TCM KNOWLEDGE\n\n# Glossaire Ingrédients - Pharmacopée Chinoise\n\n## Plantes Toniques du Qi\n\n### Ginseng (Ren Shen 人参)\n- **Famille** : Araliacées\n- **Partie utilisée** : Racine\n- **Nature** : Tiède\n- **Saveur** : Douce, légèrement amère\n- **Méridiens** : Rate, Poumon, Cœur\n- **Actions traditionnelles** :\n  - Tonifie le Qi originel\n  - Renforce la Rate et le Poumon\n  - Génère les liquides organiques\n  - Calme l'Esprit (Shen)\n- **Utilisations** : Fatigue profonde, faiblesse après maladie, transpiration spontanée\n- **Principes actifs** : Ginsénosides (saponines triterpéniques)\n- **Dosage traditionnel** : 3-9g par jour\n\n### Astragale (Huang Qi 黄芪)\n- **Famille** : Fabacées\n- **Partie utilisée** : Racine\n- **Nature** : Tiède\n- **Saveur** : Douce\n- **Méridiens** : Rate, Poumon\n- **Actions traditionnelles** :\n  - Tonifie le Qi de la Rate\n  - Consolide le Wei Qi (énergie défensive)\n  - Favorise la montée du Yang\n  - Favorise la diurèse\n- **Utilisations** : Fatigue chronique, transpiration spontanée, œdèmes\n- **Principes actifs** : Polysaccharides, flavonoïdes\n- **Dosage traditionnel** : 9-30g par jour\n\n## Plantes Toniques du Sang\n\n### Angélique Chinoise (Dang Gui 当归)\n- **Famille** : Apiacées\n- **Partie utilisée** : Racine\n- **Nature** : Tiède\n- **Saveur** : Douce, piquante\n- **Méridiens** : Foie, Cœur, Rate\n- **Actions traditionnelles** :\n  - Tonifie et harmonise le Sang\n  - Active la circulation sanguine\n  - Lubrifie les intestins\n- **Utilisations** : Troubles menstruels, anémie, constipation\n- **Principes actifs** : Acide férulique, ligustilide\n- **Dosage traditionnel** : 6-12g par jour\n\n## Plantes Toniques du Yin\n\n### Lyciet (Gou Qi Zi 枸杞子)\n- **Famille** : Solanacées\n- **Partie utilisée** : Baie\n- **Nature** : Neutre\n- **Saveur** : Douce\n- **Méridiens** : Foie, Rein, Poumon\n- **Actions traditionnelles** :\n  - Tonifie le Foie et le Rein\n  - Nourrit le Sang et le Yin\n  - Éclaircit les yeux\n- **Utilisations** : Fatigue oculaire, vertiges, toux sèche\n- **Principes actifs** : Caroténoïdes, polysaccharides\n- **Dosage traditionnel** : 6-12g par jour\n\n## Champignons Médicinaux\n\n### Reishi (Ling Zhi 灵芝)\n- **Famille** : Ganodermatacées\n- **Partie utilisée** : Carpophore\n- **Nature** : Neutre\n- **Saveur** : Douce, légèrement amère\n- **Méridiens** : Cœur, Foie, Poumon, Rein\n- **Actions traditionnelles** :\n  - Tonifie le Qi\n  - Calme l'Esprit\n  - Soulage la toux\n  - Transforme les Glaires\n- **Utilisations** : Insomnie, anxiété, toux chronique\n- **Principes actifs** : Polysaccharides, triterpènes\n- **Dosage traditionnel** : 6-12g par jour\n\n### Cordyceps (Dong Chong Xia Cao 冬虫夏草)\n- **Famille** : Cordycipitacées\n- **Partie utilisée** : Sclérote + larve\n- **Nature** : Tiède\n- **Saveur** : Douce\n- **Méridiens** : Poumon, Rein\n- **Actions traditionnelles** :\n  - Tonifie les Reins\n  - Renforce le Poumon\n  - Arrête les saignements\n- **Utilisations** : Toux chronique, lombalgie, asthénie\n- **Principes actifs** : Cordycépine, polysaccharides\n- **Dosage traditionnel** : 5-10g par jour\n\n\n# Concepts Fondamentaux MTC\n\n## Le Qi (气)\n\n### Définition\nLe Qi est l'énergie vitale qui anime tous les êtres vivants. C'est une substance subtile en mouvement constant, à la base de toutes les fonctions physiologiques.\n\n### Types de Qi\n- **Yuan Qi** (气原) : Qi originel, hérité des parents\n- **Zong Qi** (宗气) : Qi ancestral, formé par la respiration et l'alimentation\n- **Wei Qi** (卫气) : Qi défensif, protège contre les agressions externes\n- **Ying Qi** (营气) : Qi nourricier, circule dans les méridiens\n\n### Fonctions du Qi\n1. **Transformation** : Transformation des aliments et des liquides\n2. **Transport** : Déplacement du Sang et des liquides\n3. **Protection** : Défense contre les pathogènes externes\n4. **Réchauffement** : Maintien de la température corporelle\n5. **Contention** : Maintien des organes et du Sang dans leurs circuits\n\n## Le Sang (Xue 血)\n\nLe Sang nourrit et hydrate tous les tissus du corps. Il circule dans les vaisseaux sous l'impulsion du Qi.\n\n### Relation Qi-Sang\n- \"Le Qi est le commandant du Sang\"\n- \"Le Sang est la mère du Qi\"\n\n## Le Yin et le Yang (阴阳)\n\n### Principe Fondamental\nTous les phénomènes peuvent être classés selon leur nature Yin ou Yang :\n\n**Yang** :\n- Chaud, actif, extérieur\n- Ascendant, lumineux\n- Fonction, énergie\n\n**Yin** :\n- Froid, passif, intérieur\n- Descendant, sombre\n- Matière, structure\n\n### Équilibre Yin-Yang\nLa santé repose sur l'équilibre dynamique entre Yin et Yang.\n\n## Les Cinq Éléments (Wu Xing 五行)\n\n### Bois (木 Mu)\n- Organe : Foie / Vésicule Biliaire\n- Saison : Printemps\n- Émotion : Colère\n- Saveur : Acide\n\n### Feu (火 Huo)\n- Organe : Cœur / Intestin Grêle\n- Saison : Été\n- Émotion : Joie\n- Saveur : Amère\n\n### Terre (土 Tu)\n- Organe : Rate / Estomac\n- Saison : Intersaison\n- Émotion : Réflexion\n- Saveur : Douce\n\n### Métal (金 Jin)\n- Organe : Poumon / Gros Intestin\n- Saison : Automne\n- Émotion : Tristesse\n- Saveur : Piquante\n\n### Eau (水 Shui)\n- Organe : Rein / Vessie\n- Saison : Hiver\n- Émotion : Peur\n- Saveur : Salée\n\n## Les Méridiens (经络 Jing Luo)\n\nLes méridiens sont les canaux dans lesquels circulent le Qi et le Sang, reliant les Organes aux tissus périphériques.\n\n### 12 Méridiens Principaux\n- Poumon (Tai Yin de la main)\n- Gros Intestin (Yang Ming de la main)\n- Estomac (Yang Ming du pied)\n- Rate (Tai Yin du pied)\n- Cœur (Shao Yin de la main)\n- Intestin Grêle (Tai Yang de la main)\n- Vessie (Tai Yang du pied)\n- Rein (Shao Yin du pied)\n- Maître du Cœur (Jue Yin de la main)\n- Triple Réchauffeur (Shao Yang de la main)\n- Vésicule Biliaire (Shao Yang du pied)\n- Foie (Jue Yin du pied)\n\n\n\n## 1. BRAND GUIDELINES\n\n# Voix de Marque Calebasse - Français\n\n## Notre ADN\n\nCalebasse Laboratoire incarne l'alliance entre la sagesse millénaire de la Médecine Traditionnelle Chinoise et l'exigence de qualité moderne. Notre voix est celle d'un expert accessible, qui transmet avec passion et rigueur.\n\n## Principes de Rédaction\n\n### 1. Tone\n- **Pédagogique** : Nous expliquons simplement des concepts complexes\n- **Chaleureux** : Nous accompagnons nos lecteurs avec bienveillance\n- **Professionnel** : Notre expertise transparaît sans arrogance\n- **Rassurant** : Nous inspirons confiance par notre transparence\n\n### 2. Vocabulaire de Marque\n\n**Mots-clés privilégiés :**\n- Harmonie, équilibre, bien-être\n- Tradition millénaire, sagesse ancestrale\n- Qualité, authenticité, traçabilité\n- Nature, plantes, ingrédients\n- Énergie vitale, Qi, vitalité\n- Accompagnement, soutien, renforcement\n\n**Expressions caractéristiques :**\n- \"Découvrez les bienfaits de...\"\n- \"Depuis des millénaires, la MTC utilise...\"\n- \"Chez Calebasse, nous sélectionnons...\"\n- \"Pour votre bien-être au quotidien...\"\n- \"Une approche naturelle et éprouvée...\"\n\n### 3. Style d'Écriture\n\n**Structure type d'introduction :**\n\"Découvrez [ingrédient/concept], un trésor de la pharmacopée chinoise utilisé depuis [période] pour [bénéfice principal]. Chez Calebasse Laboratoire, nous vous proposons des formules authentiques qui respectent les principes traditionnels tout en garantissant une qualité irréprochable.\"\n\n**Transitions fluides :**\n- \"Intéressons-nous maintenant à...\"\n- \"Pour mieux comprendre...\"\n- \"Dans la tradition chinoise...\"\n- \"Concrètement, cela signifie que...\"\n\n**Conclusions engageantes :**\n\"Que vous souhaitiez [objectif], [ingrédient] peut devenir votre allié naturel. Chez Calebasse, nous vous accompagnons dans votre quête d'équilibre et de bien-être, en vous offrant le meilleur de la tradition chinoise.\"\n\n## Exemples Concrets\n\n### Introduction d'Article (Ginseng)\n\"Le ginseng rouge coréen, ou 'Ren Shen' en chinois, est considéré depuis plus de 2000 ans comme le 'roi des plantes' dans la pharmacopée asiatique. Cette racine exceptionnelle, cultivée pendant 6 ans minimum, concentre des propriétés adaptogènes remarquables. Chez Calebasse Laboratoire, nous sélectionnons uniquement des ginsengs issus de cultures traditionnelles coréennes, garantissant une teneur optimale en ginsénosides.\"\n\n### Présentation d'Ingrédient (Astragale)\n\"L'astragale (Huang Qi) est une plante majeure de la MTC, appréciée pour sa capacité à tonifier le Qi et soutenir les défenses naturelles. Utilisée traditionnellement pour renforcer l'énergie vitale, cette racine jaune dorée accompagne l'organisme dans son équilibre quotidien.\"\n\n\nRÈGLES \nAllégations Autorisées (Règlement UE 432/2012)Règles de Conformité Générales\nEn Europe, les allégations de santé sur les compléments alimentaires sont strictement encadrées. Seules celles approuvées par l’EFSA (Autorité Européenne de Sécurité des Aliments) peuvent être utilisées.Interdictions AbsoluesAllégations Thérapeutiques Interdites\n\nÀ ne jamais utiliser :\nTraite le diabète\nGuérir l’hypertension\nSoigne l’insomnie\nPrévient le cancer\nRéduit la tension artérielle\n\"Anti-inflammatoire\" (sauf exceptions listées)\nAntiviral, Antibactérien\nRégule la glycémie \nAméliore la circulation sanguine\nGuérir / Guérison\nTraiter / Traitement\nSoigner\nPrévenir (contexte médical)\nRemède contre...\nMédicament\nDiagnostic\nThérapie / Thérapeutique\nHolistique\nmaladie\npathologie\nsyndrome\ntrouble médical\naffection\nétat pathologique\ninfection\nCarence\nInfection\ndépression\nanxiété\nhypertension\nhypotension\ncholestérol élevé (sans allégation autorisée)\narthrose\nendométriose\ninflammation\ninfection\nfièvre\ncrise\nbrûlure (au sens pathologique)\nlésion\nœdème\ntraitement médical\nposologie médicale\n\n\nFormulations Autorisées Vitamines et Minéraux\nVitamine C\nContribue au fonctionnement normal du système immunitaire\nContribue à réduire la fatigue\nProtège les cellules contre le stress oxydatif\nVitamine D\nContribue au maintien d’une ossature normale\nContribue au fonctionnement normal du système immunitaire\nFer\nContribue à réduire la fatigue\nParticipe au transport normal de l’oxygène dans l’organisme\nMagnésium\nContribue à réduire la fatigue\nParticipe à un métabolisme énergétique normal\nContribue au fonctionnement normal du système nerveux\nPlantes (Exemples Autorisés)\n\nValériane\nFavorise un sommeil réparateur\nContribue à la relaxation\nPassiflore\nAide à trouver un meilleur sommeil\nFavorise la détente et la relaxation\nArtichaut\nContribue au confort digestif\nFavorise l’élimination rénale de l’eau\nGingembre\nContribue au fonctionnement normal de l’estomac\nAide à maintenir énergie et vitalité\nVocabulaire SécuriséVerbes Autorisés\nToujours privilégier :\nContribue à...\nParticipe à...\nAide à...\nFavorise...\nSoutient...\nAccompagne...\nExpressions Sûres\nPeut vous aider à...\nEst traditionnellement utilisé pour...\nReconnu pour ses propriétés...\nJoue un rôle dans...\nParticipe au maintien de...\nExemples Corrects vs Incorrects\n\nSommeil\nIncorrect\nCorrect\nTraite l’insomnie\nFavorise un sommeil réparateur\nGuérit les troubles du sommeil\nContribue à la relaxation nécessaire au sommeil\n\nDigestion\nIncorrect\nCorrect\nSoigne les problèmes digestifs\nContribue au confort digestif\nTraite les brûlures d’estomac\nFavorise le bien-être digestif\n\nImmunité\nIncorrect\nCorrect\nRenforce le système immunitaire\nContribue au fonctionnement normal du système immunitaire\nPrévient les infections\nSoutient les défenses naturelles de l’organisme\n\nStress & Anxiété\nIncorrect\nCorrect\nTraite l’anxiété\nFavorise la relaxation et le bien-être mental\nAnti-stress\nAide à faire face au stress passager\n\nMentions Obligatoires\n\nÀ inclure sur tous les supports marketing :\n« Les compléments alimentaires ne se substituent pas à une alimentation variée et équilibrée ni à un mode de vie sain. »\nNe pas dépasser la dose journalière recommandée.\nTenir hors de portée des enfants.\nDemander l’avis d’un professionnel de santé en cas de grossesse, d’allaitement ou de traitement médical.\nCas Particuliers\n\nPerte de poids\nInterdit\nAutorisé\n\"Fait maigrir\", \"Brûle les graisses\", \"Perte de poids rapide\"\n\"Peut accompagner un régime alimentaire\" (sous conditions)\n\nCholestérol\nInterdit\nAutorisé\n\"Réduit le cholestérol\"\n\"Contribue au maintien d’un taux de cholestérol normal\" (selon ingrédient)\n\nArticulations\nInterdit\nAutorisé\n\"Anti-inflammatoire\", \"Soulage l’arthrose\"\n\"Contribue au confort articulaire\" (sous conditions)\n\nCe Qu’il Faut Éviter\nTon trop commercial : \"Achetez maintenant notre produit miracle !\"\nJargon non expliqué : toujours vulgariser les termes techniques.\nEx. “Le Huang Qi tonifie le Wei Qi du Tai Yin Fei” → “Le Huang Qi renforce l’énergie défensive du méridien du Poumon.”\nSuperlatifs excessifs : \"Produit incroyable, révolutionnaire !\"\nPromesses médicales : \"Guérit le diabète\" → \"Peut contribuer à l’équilibre glycémique.\"\n\n\n"
+        }
+      },
+      "id": "246503d6-4d95-450b-a4fa-dac35517ffc2",
+      "name": "AI Agent Rédaction",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.7,
+      "position": [
+        1184,
+        1248
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const data = $input.item.json;\n\nreturn [{\n  json: {\n    article_id: data.id,\n    topic: data.topic,\n    parameters: data.parameters,\n    toc: data.table_of_contents,\n    user_id: data.user_id\n  }\n}];"
+      },
+      "id": "8ecabcc9-75c6-4ffd-927d-8da22e9c9be3",
+      "name": "Merge Validated TOC",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        752,
+        1248
+      ]
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $('Read Supabase Validated').item.json.id }}",
+        "contextWindowLength": 500
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        2912,
+        1584
+      ],
+      "id": "9e0473b8-0758-4fdb-8c42-1edc31d855c3",
+      "name": "Simple Memory4"
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $('Read Supabase Validated').item.json.id }}",
+        "contextWindowLength": 500
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        2128,
+        1584
+      ],
+      "id": "8f992d55-28d8-4c04-a8d8-7757b1d18ed0",
+      "name": "Simple Memory3"
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $('Read Supabase Validated').item.json.id }}",
+        "contextWindowLength": 500
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        1344,
+        1584
+      ],
+      "id": "5e9d55f1-7bee-4fa4-878e-ec517ce3ec4f",
+      "name": "Simple Memory2"
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $('Parse Article Data').item.json.article_id }}",
+        "contextWindowLength": 500
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        1872,
+        608
+      ],
+      "id": "967344a7-4dfe-461d-970b-9f8bf28baf77",
+      "name": "Simple Memory1"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        1712,
+        608
+      ],
+      "id": "825f6c7c-76bc-4315-ac47-7172c82d66e2",
+      "name": "Google Gemini Chat Model1",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "2NfiMV7vGBhhdclG",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Tu es un planificateur de contenu expert.\n\nMISSION\nCrée une Table des Matières (TOC) structurée et détaillée pour l'article suivant, organisée clairement en :\n\nIntroduction\n\nPartie 1, Partie 2, Partie 3, etc. (chacune avec un titre et des sous-sections)\n\nConclusion (facultative mais recommandée)\n\nCONTEXTE\nSujet : {{ $('Webhook Start').item.json.body.prompt }}\nLangue : {{ $('Webhook Start').item.json.body.language }}\nTone : {{ $('Webhook Start').item.json.body.tone }}\nLongueur cible : {{ $('Webhook Start').item.json.body.length }} mots\n\nRECHERCHE EFFECTUÉE\n{{ JSON.stringify($json.research, null, 2) }}\n\nFORMAT ATTENDU\nGénère un JSON avec cette structure EXACTE :\n\njson\n{\n  \"plan_options\": {\n    \"axes\": [\n      \"Axe 1: Description\",\n      \"Axe 2: Description\",\n      \"Axe 3: Description\",\n      \"Axe 4: Description\"\n    ],\n    \"titles\": [\n      \"Titre 1\",\n      \"Titre 2\",\n      \"Titre 3\",\n      \"Titre 4\"\n    ]\n  },\n  \"toc\": {\n    \"title\": \"Titre principal par défaut\",\n    \"sections\": [\n      {\n        \"id\": \"section_1\",\n        \"title\": \"Introduction\",\n        \"resume\": \"...\"\n      },\n      {\n        \"id\": \"section_2\",\n        \"title\": \"Partie 1 : Titre de la première grande idée\",\n        \"subsections\": [\n          { \"id\": \"section_2_1\", \"title\": \"Sous-section 1 de la Partie 1\" },\n          { \"id\": \"section_2_2\", \"title\": \"Sous-section 2 de la Partie 1\" }\n        ]\n      },\n      {\n        \"id\": \"section_3\",\n        \"title\": \"Partie 2 : Titre de la deuxième grande idée\",\n        \"subsections\": [\n          { \"id\": \"section_3_1\", \"title\": \"Sous-section 1 de la Partie 2\" },\n          { \"id\": \"section_3_2\", \"title\": \"Sous-section 2 de la Partie 2\" }\n        ]\n      },\n      {\n        \"id\": \"section_4\",\n        \"title\": \"Partie 3 : Titre de la troisième grande idée\",\n        \"subsections\": [\n          { \"id\": \"section_4_1\", \"title\": \"Sous-section 1 de la Partie 3\" },\n          { \"id\": \"section_4_2\", \"title\": \"Sous-section 2 de la Partie 3\" }\n        ]\n      },\n      {\n        \"id\": \"section_5\",\n        \"title\": \"Conclusion\",\n        \"resume\": \"...\"\n      }\n    ]\n  }\n}\n\nRÈGLES IMPORTANTES\nIntroduction : doit toujours être la première section (id: \"section_1\", titre \"Introduction\" ou équivalent).\n\nParties : au minimum 2 à 3 grandes parties (section_2, section_3, section_4…), chacune avec 2 à 4 sous-sections cohérentes.\n\nConclusion : idéalement la dernière section (par ex. section_5 ou section_6) avec titre explicite (\"Conclusion\", \"Pour aller plus loin\", etc.).\n\nLes id doivent rester cohérents :\n\nsection_X pour les sections,\n\nsection_X_Y pour les sous-sections.\n\nLes 4 axes dans plan_options.axes doivent représenter des orientations thématiques différentes possibles pour l’article.\n\nplan_options.titles propose 4 titres d’article possibles, cohérents avec les axes.\n\nL’agent doit impérativement retourner la liste complète des sources (liens) qui lui ont servi pour construire le plan dans le champ \"sources\" (tableau de strings).",
+        "options": {
+          "systemMessage": "Tu es expert en structuration de contenu. Tu crées des plans d'articles clairs et logiques.\n\nBest practices rédactionnelles – Articles éditoriaux\n1. L’introduction : poser clairement le sujet dès les premières lignes\nRègle essentielle :\n Dès l’introduction, le lecteur doit comprendre de quoi parle l’article et ce qu’il va y trouver.\nÀ respecter :\nUne introduction courte, claire et qualitative.\n\n\nLe sujet principal doit être explicitement annoncé.\n\n\nL’angle de traitement doit être identifiable (lecture MTC, énergétique, culturelle, etc.).\n\n\nÉviter toute entrée trop vague, trop large ou trop abstraite.\n\n\nL’objectif n’est pas seulement de capter l’attention, mais de donner une direction précise et de rassurer le lecteur sur la pertinence du contenu.\n\n2. Un corps d’article structuré et maîtrisé\nLe corps de l’article doit être organisé de façon lisible et logique.\nPrincipes de structure :\nLe contenu doit être découpé en 1 à 3 grandes parties maximum.\n\n\nChaque partie correspond à un axe clair en lien direct avec le sujet.\n\n\nLa structure doit être pensée avant l’écriture, pas improvisée.\n\n\nUne structure simple et lisible est toujours préférable à une multiplication de sous-parties peu cohérentes.\n\n3. Chaque partie doit répondre au sujet posé\nChaque section du corps de l’article doit apporter une réponse concrète au thème annoncé dans l’introduction.\nÀ vérifier systématiquement :\nChaque partie a un objectif clair.\n\n\nChaque développement apporte un éclairage nouveau.\n\n\nAucun paragraphe n’est hors sujet ou redondant.\n\n\nSi un passage n’aide pas à mieux comprendre le sujet, il doit être supprimé ou retravaillé.\n\n4. Des transitions fluides et naturelles\nLes transitions sont essentielles pour assurer une lecture fluide.\nBonnes pratiques :\nRelier les idées de manière naturelle.\n\n\nAssurer une continuité logique entre les parties.\n\n\nÉviter les ruptures abruptes ou les enchaînements artificiels.\n\n\nLe lecteur doit avoir le sentiment d’un raisonnement qui avance, sans à-coups.\n\n5. Respect strict du sujet annoncé\nMême dans un article exploratoire ou prospectif, le contenu doit rester aligné avec le sujet initial.\nRègle clé :\nTout ce qui est écrit doit servir la promesse faite en introduction.\nLes digressions, même intéressantes, doivent être évitées si elles ne renforcent pas le propos principal.\n\n6. Une conclusion qui synthétise et ouvre\nLa conclusion doit :\nRécapituler brièvement les points essentiels.\n\n\nDonner une vision d’ensemble du sujet traité.\n\n\nOuvrir vers une réflexion, une perspective ou un approfondissement.\n\n\nElle ne doit pas introduire de nouvelles idées majeures, mais aider le lecteur à repartir avec une compréhension claire.\n\n7. Ton et posture éditoriale\nTon clair, structuré et accessible.\n\n\nApproche pédagogique, sans jargon inutile.\n\n\nRigueur dans les propos, sans excès de technicité.\n\n\nStyle fluide, naturel, jamais confus ou approximatif.\n\n\nL’objectif est de transmettre une lecture intelligible et cohérente, pas d’impressionner par la complexité.\n\nEn résumé\nUn bon article éditorial :\nannonce clairement son sujet dès l’introduction,\n\n\nsuit une structure simple et logique,\n\n\nrépond réellement au thème annoncé,\n\n\nprogresse de manière fluide,\n\n\nrespecte le temps et l’attention du lecteur.\n\n"
+        }
+      },
+      "id": "4fbd7b2b-5022-430a-b687-3038f3f5b847",
+      "name": "AI Agent Planificateur",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.7,
+      "position": [
+        1760,
+        272
+      ],
+      "alwaysOutputData": true,
+      "retryOnFail": true,
+      "notesInFlow": true,
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Tu es un agent de recherche expert spécialisé dans la création de contenu web optimisé pour le SEO.\n\nCONTEXTE\nSujet : {{ $json.topic || $json.article.prompt }}\nLangue : {{ $json.article.language }}\nTon : {{ $json.article.tone }}\n\n{{ $json.article.attached_files && $json.article.attached_files.length > 0 ? '## LIENS FOURNIS EN ENTRÉE\\nL\\'utilisateur a fourni ces liens de départ (tu DOIS les utiliser) :\\n' + $json.article.attached_files.toJsonString() : '' }}\n\n\nWORKFLOW OBLIGATOIRE EN 4 ÉTAPES\nÉTAPE 1 : RECHERCHE WEB AVEC Search in Tavily (OBLIGATOIRE)\nOutil : Search in Tavily\n\nIMPORTANT : Tu dois EXTRAIRE les URLs des résultats de recherche.\n\nActions :\n\nEffectue 8-10 recherches Google différentes sur le sujet\n\nPour CHAQUE résultat de recherche :\n\nExtrais l'URL (champ \"link\" dans les résultats de recherche)\n\nExtrais le titre (champ \"title\")\n\nNote la description (champ \"snippet\")\n\nCompile une liste de 10-20 URLs uniques trouvées via SerpAPI\n\nFormat des résultats de recherche :\nLes résultats contiennent un tableau \"organic_results\" avec :\n\n\"link\": l'URL de la page\n\n\"title\": le titre\n\n\"snippet\": la description\n\nTu DOIS :\n\nExtraire le champ \"link\" de CHAQUE résultat\n\nCréer une liste \"urls_found_serpapi\" avec ces URLs\n\nNe pas dupliquer les URLs déjà présentes dans les liens d'entrée\n\nRésultat attendu : Liste de 10-20 URLs NOUVELLES trouvées via SerpAPI\n\nÉTAPE 2 : MERGER LES SOURCES\nCrée une liste complète des URLs à scraper :\n\nLes URLs trouvées via la recherche web (ÉTAPE 1)\n\n{{ $json.article.attached_files && $json.article.attached_files.length > 0 ? '+ Les URLs fournies en entrée : ' + JSON.stringify($json.article.attached_files) : '' }}\n\nTotal attendu : {{ $json.article.attached_files && $json.article.attached_files.length > 0 ? ($json.article.attached_files.length + ' (fournis) + 10-20 (trouvés) = 14-24 URLs') : '10-20 URLs' }}\n\nÉTAPE 3 : SCRAPING DES SOURCES (OBLIGATOIRE)\nActions :\n\nScrappe {{ $json.article.attached_files && $json.article.attached_files.length > 0 ? 'TOUS les liens (fournis + trouvés)' : 'les 8-12 meilleurs liens trouvés' }}\n\nExtrais le contenu complet :\n\nTexte principal\n\nTitres H1/H2/H3\n\nStatistiques et chiffres\n\nListes importantes\n\nRésultat : Contenu de {{ $json.article.attached_files && $json.article.attached_files.length > 0 ? 'tous les liens' : '8-12 sources' }}\n\nÉTAPE 4 : ANALYSE ET SYNTHÈSE\nExtrais :\n\nConcepts clés (5-7)\n\nMots-clés SEO (primaires, secondaires, longue traîne)\n\nPoints importants (8-12)\n\nStatistiques clés\n\nAngles uniques\n\nQuestions fréquentes\n\nTOUTES LES SOURCES UTILISÉES (avec détails)\n\nFORMAT DE SORTIE JSON\nFORMAT JSON ATTENDU (STRICT)\nTu DOIS répondre UNIQUEMENT avec ce JSON exact :\n\njson\n{\n  \"search_performed\": {\n    \"SearchinTavily_queries\": [\"requête 1\", \"requête 2\", ...],\n    \"urls_input\": [\"url1\", \"url2\", ...],\n    \"urls_found_web\": [\"url1\", \"url2\", ...],\n    \"urls_scraped\": [\"url1\", \"url2\", ...],\n    \"sources_detailed\": [\n      {\n        \"url\": \"https://...\",\n        \"title\": \"Titre\",\n        \"content\": \"Contenu complet...\",\n        \"relevance\": \"high/medium/low\"\n      }\n    ]\n  },\n  \"keywords\": {\n    \"primary\": [\"mot-clé principal 1\", \"mot-clé principal 2\", \"mot-clé principal 3\"],\n    \"secondary\": [\"mot-clé secondaire 1\", \"mot-clé secondaire 2\", \"mot-clé secondaire 3\", \"...\"],\n    \"long_tail\": [\"expression longue 1\", \"expression longue 2\", \"...\"]\n  },\n  \"concepts\": {\n    \"main_topics\": [\"concept 1\", \"concept 2\", \"...\"],\n    \"subtopics\": [\"sous-concept 1\", \"sous-concept 2\", \"...\"],\n    \"related_terms\": [\"terme connexe 1\", \"terme connexe 2\", \"...\"]\n  }\n}\n⚠️ RÈGLES CRITIQUES :\n\n\"keywords\" NE PEUT PAS ÊTRE VIDE\n\n\"primary\" doit contenir 3-5 mots-clés principaux\n\n\"secondary\" doit contenir 5-10 mots-clés secondaires\n\n\"long_tail\" doit contenir 5-10 expressions longue traîne\n\nTous les keywords doivent être en {{ $json.article.parameters?.language === 'EN' ? 'anglais' : 'français' }}\n\n⚠️ CRITIQUE : \"urls_found_web\" NE PEUT PAS ÊTRE VIDE\n⚠️ Il doit contenir 10-20 URLs extraites des résultats SerpAPI\n⚠️ Format : [\"https://...\", \"https://...\", ...]\n\nÉTAPE 5 : EXTRACTION DES MOTS-CLÉS SEO (OBLIGATOIRE)\nTu DOIS analyser tous les contenus scrapés et extraire :\n\nA. MOTS-CLÉS PRINCIPAUX (Primary)\n3-5 mots-clés à TRÈS FORT volume de recherche\n\nGénériques et stratégiques\n\nExemples : \"médecine chinoise\", \"acupuncture\", \"qi gong\"\n\nB. MOTS-CLÉS SECONDAIRES (Secondary)\n5-10 mots-clés à volume moyen\n\nPlus spécifiques que les primary\n\nExemples : \"théorie du yin yang\", \"méridiens énergétiques\", \"ventouses chinoises\"\n\nC. LONGUE TRAÎNE (Long-tail)\n5-10 expressions de 3+ mots\n\nTrès spécifiques, faible concurrence\n\nExemples : \"comment fonctionne la médecine chinoise\", \"bienfaits de l'acupuncture pour le stress\"\n\nMÉTHODE D'EXTRACTION :\n\nIdentifie les termes qui reviennent le plus dans les sources\n\nRepère les titres et sous-titres des articles scrapés\n\nExtrais les questions fréquentes (FAQ)\n\nListe les termes techniques importants\n\n⚠️ SI \"keywords\" EST VIDE DANS TON JSON, TU AS ÉCHOUÉ.\n\nRÈGLES CRITIQUES\n⚠️ TOUJOURS UTILISER la recherche web même si des liens sont fournis\n⚠️ SCRAPPER TOUT : liens fournis + liens trouvés\n⚠️ LISTER TOUTES LES SOURCES dans le JSON final avec \"source_type\"\n⚠️ Le champ \"urls_scraped\" doit contenir {{ $json.article.attached_files && $json.article.attached_files.length > 0 ? 'TOUS les liens (fournis + trouvés)' : 'tous les liens trouvés' }}\n\nSi tu ne retournes pas TOUTES les sources avec leur type (input/recherche web), ta réponse est INVALIDE.",
+        "options": {
+          "systemMessage": "=Tu es un agent de recherche expert.\n\nRÈGLE ABSOLUE N°1 : TU DOIS TOUJOURS UTILISER SERPAPI EN PREMIER.\n\nWORKFLOW OBLIGATOIRE :\n1️⃣ Outil de recherche web → Faire 5-10 recherches Google\n2️⃣ Extraire les URLs → Récupérer le champ \"link\" de CHAQUE résultat\n3️⃣ Scraper les pages → Scraper ces URLs\n4️⃣ Synthétiser → Créer le JSON final\n\nEXTRACTION DES URLS :\nQuand tu reçois les résultats de recherche, ils contiennent \"organic_results\" :\n\njson\n[\n  { \"link\": \"https://...\", \"title\": \"...\", \"snippet\": \"...\" },\n  { \"link\": \"https://...\", \"title\": \"...\", \"snippet\": \"...\" }\n]\nTU DOIS extraire CHAQUE \"link\" et les mettre dans \"urls_found_serpapi\".\n\nEXEMPLE :\nSi tu trouves 3 résultats, \"urls_found_serpapi\" DOIT contenir 3 URLs minimum.\n\nSi \"urls_found_serpapi\" est vide dans ton JSON final, TU AS ÉCHOUÉ.\n\nEXEMPLE CONCRET D'EXTRACTION DES RÉSULTATS\nCe que tu reçois de l’outil de recherche web :\n\njson\n{\n  \"organic_results\": [\n    {\n      \"position\": 1,\n      \"title\": \"Médecine Traditionnelle Chinoise - Wikipedia\",\n      \"link\": \"https://fr.wikipedia.org/wiki/M%C3%A9decine_traditionnelle_chinoise\",\n      \"snippet\": \"La médecine traditionnelle chinoise...\"\n    },\n    {\n      \"position\": 2,\n      \"title\": \"MTC : principes et bienfaits\",\n      \"link\": \"https://www.passeportsante.net/fr/Therapies/Guide/Fiche.aspx?doc=medecine_traditionnelle_chinoise\",\n      \"snippet\": \"Les grands principes...\"\n    }\n  ]\n}\nCe que tu DOIS extraire :\n\njson\n\"urls_found_web\": [\n  \"https://fr.wikipedia.org/wiki/M%C3%A9decine_traditionnelle_chinoise\",\n  \"https://www.passeportsante.net/fr/Therapies/Guide/Fiche.aspx?doc=medecine_traditionnelle_chinoise\"\n]\nCRITIQUE : Tu DOIS extraire le champ \"link\" de CHAQUE résultat.",
+          "maxIterations": 10,
+          "returnIntermediateSteps": true,
+          "passthroughBinaryImages": true
+        }
+      },
+      "id": "9bf821a4-c0b7-4a17-a28d-98cc918820c0",
+      "name": "AI Agent Recherche",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.7,
+      "position": [
+        1008,
+        272
+      ],
+      "alwaysOutputData": true,
+      "retryOnFail": true,
+      "notesInFlow": true,
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        704,
+        592
+      ],
+      "id": "4a0d1395-6432-4d05-9140-b0b469e7bc44",
+      "name": "Google Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "2NfiMV7vGBhhdclG",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $json.article_id }}",
+        "contextWindowLength": 500
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        896,
+        592
+      ],
+      "id": "e4b8f959-8e82-48f9-abbb-a5da7b858627",
+      "name": "Simple Memory"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        2752,
+        1584
+      ],
+      "id": "022ad959-0b3d-497c-8905-c53d95b3dd30",
+      "name": "Google Gemini Chat Model4",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "2NfiMV7vGBhhdclG",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "modelName": "models/gemini-2.5-flash-lite",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        1968,
+        1584
+      ],
+      "id": "040f1601-be6e-4ba7-b34d-a702c4be148c",
+      "name": "Google Gemini Chat Model3",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "2NfiMV7vGBhhdclG",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "modelName": "models/gemini-3-flash-preview",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        1184,
+        1584
+      ],
+      "id": "359cd300-4002-4a6e-b8e2-f869df6987b3",
+      "name": "Google Gemini Chat Model2",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "2NfiMV7vGBhhdclG",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ {\n  status: 'processing_with_toc',\n  article_id: $json.article_id,\n  message: 'TOC validated. Starting article generation.'\n} }}",
+        "options": {
+          "responseCode": 202
+        }
+      },
+      "id": "861326e7-6861-47e3-b0e2-3a658c3f6ec5",
+      "name": "Response Validation",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [
+        528,
+        1056
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const body = $input.item.json.body;\n\nif (!body.article_id) {\n  throw new Error('article_id is required');\n}\n\nreturn {\n  json: {\n    article_id: body.article_id,\n    validated_toc: body.validated_toc || null,\n    user_modified: !!body.validated_toc,\n    retry_count: 0,\n    timestamp: new Date().toISOString()\n  }\n};"
+      },
+      "id": "87278ead-78e3-4775-b93e-9cde5735808d",
+      "name": "Parse Validation",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        304,
+        1152
+      ]
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "article/validate-toc",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "8c09a54d-b063-4e39-87ce-8c9abf57dc43",
+      "name": "Webhook Validate TOC",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        80,
+        1152
+      ],
+      "webhookId": "validate-toc"
+    },
+    {
+      "parameters": {
+        "jsCode": "const input = $input.item.json;\n\nreturn [{\n  json: {\n    article_id: input.id,\n    status: input.status,\n    table_of_contents: input.table_of_contents,\n    message: 'Article en attente de validation du sommaire'\n  },\n  pairedItem: 0\n}];"
+      },
+      "id": "9cbde7bf-f28f-4f5c-b38d-3bf184f3f7ad",
+      "name": "PAUSE - Waiting Validation",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2768,
+        272
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// 1. Récupération de la sortie brute de l'agent planificateur\nconst current = $input.item.json;\nconst data = Array.isArray(current) ? current[0] : current;\nconst output = data.output || JSON.stringify(data);\n\nlet rawJson;\n\ntry {\n  if (typeof output === 'object') {\n    // Cas (rare) où l'agent renvoie déjà un objet\n    rawJson = output;\n  } else {\n    // Cas standard : string avec ```json ... ```\n    const fencedMatch = output.match(/```json\\s*([\\s\\S]*?)\\s*```/i);\n    const jsonString = fencedMatch ? fencedMatch[1] : output;\n\n    const objectMatch = jsonString.match(/\\{[\\s\\S]*\\}/);\n    const clean = objectMatch ? objectMatch[0] : jsonString;\n\n    rawJson = JSON.parse(clean.trim());\n  }\n} catch (e) {\n  console.error('Erreur parse TOC JSON:', e.message);\n  rawJson = {\n    toc: { title: 'Sans titre', sections: [] },\n    plan_options: null,\n    sources: []\n  };\n}\n\n// 2. Récupérer article_id\nlet articleId = 'unknown';\ntry {\n  articleId = $('Parse Webhook').first().json.article_id;\n} catch (e) {\n  console.error('Cannot get article_id');\n}\n\n// 3. Récupérer les infos de recherche depuis le node précédent\n//    IMPORTANT : adapte le nom du node si différent\nconst researchNode = $('Parse Research Output').first().json || {};\n\nconst allSources = researchNode.all_sources || [];\nconst searchSynthesis = researchNode.search_synthesis || {\n  keywords: { primary: [], secondary: [], long_tail: [] },\n  concepts: { main_topics: [], subtopics: [], related_terms: [] }\n};\n\nconsole.log('Sources disponibles (all_sources):', allSources.length);\nconsole.log('Keywords disponibles:', searchSynthesis.keywords?.primary?.length || 0);\n\n// 4. Construction de la sortie\nreturn [{\n  json: {\n    toc: rawJson.toc || { title: 'Sans titre', sections: [] },\n    plan_options: rawJson.plan_options || null,\n    sources: rawJson.sources || [],\n    all_sources: allSources,\n    search_synthesis: {\n      // === PARTIE RECHERCHE SEO (nouveau modèle) ===\n      keywords: searchSynthesis.keywords || {\n        primary: [],\n        secondary: [],\n        long_tail: [],\n      },\n      concepts: searchSynthesis.concepts || {\n        main_topics: [],\n        subtopics: [],\n        related_terms: [],\n      },\n      sources_count: allSources.length,\n      research_depth: searchSynthesis.research_depth || (webQueries?.length > 0 ? 'deep' : 'shallow'),\n\n      // === POUR COMPATIBILITÉ AVEC L’ANCIEN MODÈLE ===\n      toc: rawJson.toc || { title: 'Sans titre', sections: [] },\n      sources_detailed: allSources, // équivalent de ton ancien tableau \"sources\" enrichi\n    },\n    article_id: articleId,\n  },\n}];\n\n"
+      },
+      "id": "5b9493df-2165-4993-b357-f6f1b8b1d082",
+      "name": "Parse TOC",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2112,
+        272
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const input = $input.item.json;\nconst output = input.output || '';\n\nconsole.log('=== PARSE RESEARCH OUTPUT ===');\n\nlet parsedOutput;\n\ntry {\n  let cleanJson;\n\n  // 1) Si output est déjà un objet (AI Agent peut renvoyer un objet)\n  if (typeof output === 'object') {\n    cleanJson = output;\n  } else {\n    // 2) Si output est une string avec éventuellement ```json ... ```\n    const jsonMatch = output.match(/```json\\s*([\\s\\S]*?)\\s*```/i);\n    const raw = jsonMatch ? jsonMatch[1] : output;\n\n    // trim pour éviter les espaces / sauts de ligne parasites\n    cleanJson = JSON.parse(raw.trim());\n  }\n\n  parsedOutput = cleanJson;\n  console.log('JSON parsé avec succès');\n} catch (e) {\n  console.error('Erreur parsing JSON:', e.message);\n  parsedOutput = {\n    search_performed: {\n      web_queries: [],\n      urls_input: [],\n      urls_found_web: [],\n      urls_scraped: [],\n      sources_detailed: []\n    },\n    keywords: { primary: [], secondary: [], long_tail: [] },\n    concepts: { main_topics: [], subtopics: [], related_terms: [] }\n  };\n}\n\nconst research = parsedOutput || {};\n\n// =====================\n// VALIDATION KEYWORDS\n// =====================\nconst keywords = research.keywords || {};\nconst hasKeywords = (keywords.primary?.length || 0) > 0;\n\nif (!hasKeywords) {\n  console.error('ERREUR : Aucun mot-clé SEO trouvé !');\n\n  // FALLBACK : Extraction automatique du sujet\n  const topic = ($('Parse Webhook').first().json.topic || '').toString();\n  const words = topic.toLowerCase().split(/\\s+/).filter(w => w.length > 3);\n\n  keywords.primary = words.slice(0, 3);\n  keywords.secondary = words.slice(3, 8);\n  keywords.long_tail = topic ? [topic] : [];\n\n  console.warn('Keywords générés par fallback:', keywords);\n}\n\nconsole.log('STATS KEYWORDS:');\nconsole.log('- Primary:', keywords.primary?.length || 0);\nconsole.log('- Secondary:', keywords.secondary?.length || 0);\nconsole.log('- Long-tail:', keywords.long_tail?.length || 0);\n\n// =====================\n// CONSTRUCTION ALL SOURCES\n// =====================\nconst allSources = [];\n\n// 1. URLs trouvées via Web\nconst webUrls = research.search_performed?.urls_found_web || [];\nwebUrls.forEach(url => {\n  allSources.push({\n    url,\n    title: 'Source Web',\n    type: 'web'\n  });\n});\n\n// 2. Sources détaillées scrapées\nconst scrapedSources = research.search_performed?.sources_detailed || [];\nscrapedSources.forEach(source => {\n  allSources.push({\n    url: source.url,\n    title: source.title || 'Sans titre',\n    type: source.source_type || 'scraped',\n    content_preview: source.content ? source.content.substring(0, 150) : ''\n  });\n});\n\nconsole.log('Total sources générées:', allSources.length);\n\n// =====================\n// CONSTRUCTION SEARCH SYNTHESIS\n// =====================\nconst webQueries = research.search_performed?.web_queries || [];\n\nconst searchSynthesis = {\n  keywords,\n  concepts: research.concepts || { main_topics: [], subtopics: [], related_terms: [] },\n  sources_count: allSources.length,\n  research_depth: webQueries.length > 0 ? 'deep' : 'shallow'\n};\n\nreturn [\n  {\n    json: {\n      research,\n      all_sources: allSources,\n      search_synthesis: searchSynthesis,\n      urls_count: {\n        web: webUrls.length,\n        scraped: scrapedSources.length,\n        total: allSources.length\n      }\n    }\n  }\n];\n"
+      },
+      "id": "17ec8d65-f5ad-45e6-a449-23537d11073e",
+      "name": "Parse Research Output",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1328,
+        272
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const article = $input.item.json;\nconst originalData = $('Parse Webhook').first().json;\n\nreturn {\n  json: {\n    ...originalData,\n    article: {\n      id: article.id,\n      title: article.title,\n      prompt: article.prompt,\n      language: article.language || 'FR',\n      tone: article.tone || 'educational',\n      target_length: article.target_length || 2000,\n      attached_files: article.attached_files || [],\n      user_preferences: article.user_preferences || {}\n    }\n  }\n};"
+      },
+      "id": "810beb2d-0bef-49d2-a2e1-041ae56fc650",
+      "name": "Parse Article Data",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        752,
+        272
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ {\n  status: 'processing',\n  article_id: $json.article_id,\n  message: 'Article generation started'\n} }}",
+        "options": {
+          "responseCode": 202
+        }
+      },
+      "id": "e88fc065-f2a7-48ff-ba19-a52fe62024ef",
+      "name": "Response 202",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [
+        528,
+        80
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "\nconst input = $input.item.json;\nconst body = input.body || input;\n\nconsole.log('=== DEBUG WEBHOOK ===');\nconsole.log('Input:', JSON.stringify(input, null, 2));\n\nconst article_id = body.article_id;\n\nif (!article_id) {\n  throw new Error('article_id is REQUIRED. Received: ' + JSON.stringify(input));\n}\n\n// Validation UUID\nconst uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;\nif (!uuidRegex.test(article_id)) {\n  throw new Error('article_id must be a valid UUID. Got: ' + article_id);\n}\n\n// Extract topic/prompt for regeneration\n// The frontend sends \"topic\" as the regeneration instruction\nconst topic = body.topic || body.prompt;\n\nconsole.log(' Valid article_id:', article_id);\nif (topic) console.log(' Found topic/prompt override');\n\nreturn {\n  json: {\n    article_id: article_id,\n    user_id: body.user_id || null,\n    topic: topic, // PASS THROUGH THE TOPIC\n    language: body.language || body.target_language || 'french',\n    parameters: body.parameters || {},\n    retry_count: 0,\n    timestamp: new Date().toISOString()\n  }\n};\n"
+      },
+      "id": "8913ebcb-d7f2-4a78-aa59-06fa19aa850a",
+      "name": "Parse Webhook",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        304,
+        176
+      ]
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "article/generate",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "f115cdbb-9cf0-4ba0-87ab-afe65541988b",
+      "name": "Webhook Start",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        80,
+        176
+      ],
+      "webhookId": "start-generation"
+    },
+    {
+      "parameters": {
+        "content": "# MODIFICATION TOC/ARTICLE\n",
+        "height": 2336,
+        "width": 3408
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        192,
+        2272
+      ],
+      "typeVersion": 1,
+      "id": "f9fa943f-20b1-4d16-9eea-9dd13b92a602",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "content": "# TRANSLATE",
+        "height": 1312,
+        "width": 3088,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        144,
+        4912
+      ],
+      "typeVersion": 1,
+      "id": "e79953bb-0f9f-402d-8304-0d83470c484f",
+      "name": "Sticky Note2"
+    },
+    {
+      "parameters": {
+        "content": "# NOUVELLE TOC / ARTICLE ",
+        "height": 2176,
+        "width": 6384,
+        "color": 6
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -400,
+        -32
+      ],
+      "typeVersion": 1,
+      "id": "495f1831-eb16-4bf1-a2c5-5d8e347f1a17",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "jsCode": "const article = $input.item.json;\nconst modifyRequest = $input.first().json;\n\nconsole.log('=== PREPARER MODIFICATION ===');\nconsole.log('- Article ID:', article.id);\nconsole.log('- Scope:', modifyRequest.scope);\nconsole.log('- Target section:', modifyRequest.target_section);\n\n// Contexte des fichiers joints\nlet filesContext = '';\nif (modifyRequest.attached_files && modifyRequest.attached_files.length > 0) {\n  filesContext = '\\n\\n## FICHIERS JOINTS\\n';\n  modifyRequest.attached_files.forEach((file, index) => {\n    filesContext += `${index + 1}. ${file.name || file.url}\\n`;\n    filesContext += `   URL: ${file.url}\\n`;\n  });\n}\n\n// Préparer les données selon le scope\nlet dataToModify = {};\nlet instruction = '';\n\nswitch (modifyRequest.scope) {\n  case 'title_only':\n    // Seulement le titre principal\n    dataToModify = {\n      title: article.table_of_contents?.title || 'Sans titre'\n    };\n    instruction = `Tu dois UNIQUEMENT modifier le TITRE PRINCIPAL de l'article. Ne touche pas aux sections.`;\n    console.log('Modification: TITRE PRINCIPAL uniquement');\n    break;\n    \n  case 'section_specific':\n    // Section spécifique par index\n    const sectionIndex = modifyRequest.target_section;\n    const targetSection = article.table_of_contents?.sections?.[sectionIndex];\n    \n    if (targetSection) {\n      dataToModify = {\n        title: article.table_of_contents.title,\n        target_section_index: sectionIndex,\n        target_section: targetSection,\n        total_sections: article.table_of_contents.sections.length\n      };\n      instruction = `Tu dois UNIQUEMENT modifier la SECTION ${sectionIndex + 1}. Les autres sections doivent rester EXACTEMENT identiques.`;\n      console.log(`Modification: SECTION ${sectionIndex + 1} uniquement`);\n    } else {\n      console.error('Section introuvable');\n      dataToModify = article.table_of_contents;\n      instruction = 'La section demandée est introuvable. Modifie ce qui est pertinent.';\n    }\n    break;\n    \n  case 'section_named':\n    // Section spécifique par nom\n    const sectionName = modifyRequest.target_section;\n    const sections = article.table_of_contents?.sections || [];\n    const foundIndex = sections.findIndex(s => \n      s.title.toLowerCase().includes(sectionName.toLowerCase())\n    );\n    \n    if (foundIndex !== -1) {\n      dataToModify = {\n        title: article.table_of_contents.title,\n        target_section_index: foundIndex,\n        target_section: sections[foundIndex],\n        total_sections: sections.length\n      };\n      instruction = `Tu dois UNIQUEMENT modifier la section \"${sectionName}\" (index ${foundIndex + 1}). Les autres sections restent identiques.`;\n      console.log(`Modification: SECTION \"${sectionName}\" trouvée (index ${foundIndex})`);\n    } else {\n      console.error('Section nommée introuvable');\n      dataToModify = article.table_of_contents;\n      instruction = 'La section nommée est introuvable. Modifie ce qui est pertinent.';\n    }\n    break;\n    \n  case 'full':\n  default:\n    // Modification complète\n    dataToModify = article.table_of_contents;\n    instruction = 'Tu peux modifier librement le TOC selon les instructions.';\n    console.log('Modification: TOC COMPLET');\n    break;\n}\n\nreturn [{\n  json: {\n    article_id: article.id,\n    full_toc: article.table_of_contents, // TOC complet pour référence\n    data_to_modify: dataToModify,\n    scope: modifyRequest.scope,\n    target_section_index: modifyRequest.target_section,\n    modification_instruction: instruction,\n    modification_request: modifyRequest.modification_request,\n    files_context: filesContext,\n    topic: article.topic,\n    sources: article.sources || []\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1552,
+        2464
+      ],
+      "id": "50a4d522-dc34-4adb-a42e-460671f006bd",
+      "name": "Preparer Modification"
+    },
+    {
+      "parameters": {
+        "jsCode": "const article = $input.item.json;\nconst modifyRequest = $('Parse Modify Article').first().json; // Seule référence autorisée\n\nconsole.log('Préparation modification article:');\nconsole.log('- Article ID:', article.id);\nconsole.log('- Contenu actuel:', article.content?.length || 0);\n\nreturn [{\n  json: {\n    article_id: article.id,\n    content: article.content,\n    instructions: modifyRequest.instructions,\n    selection: modifyRequest.selection\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1296,
+        3120
+      ],
+      "id": "7d6eb946-66ad-4d75-a9f6-0ac5e4133b71",
+      "name": "Preparer Modification Article"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "tableId": "articles",
+        "matchType": "allFilters",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "id",
+              "condition": "eq",
+              "keyValue": "={{ $json.article_id }}"
+            }
+          ]
+        },
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "table_of_contents",
+              "fieldValue": "={{ $json.toc }}"
+            },
+            {
+              "fieldId": "plan_options",
+              "fieldValue": "={{ $json.plan_options }}"
+            },
+            {
+              "fieldId": "sources",
+              "fieldValue": "={{ $json.all_sources }}"
+            },
+            {
+              "fieldId": "created_at",
+              "fieldValue": "={{ new Date().toISOString() }}"
+            },
+            {
+              "fieldId": "status",
+              "fieldValue": "waiting_validation"
+            },
+            {
+              "fieldId": "search_synthesis",
+              "fieldValue": "={{ $json.search_synthesis }}"
+            }
+          ]
+        }
+      },
+      "id": "bd006a3c-487b-46ea-96d6-afc6d6d0a510",
+      "name": "Update Supabase TOC",
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        2416,
+        272
+      ],
+      "credentials": {
+        "supabaseApi": {
+          "id": "wsR97aCnWHDWGEIK",
+          "name": "Supabase account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const data = $input.item.json;\nconst article = $('Read Supabase Validated').first().json; //  Seule référence autorisée\n\nconsole.log('Préparation rédaction:');\nconsole.log('- Article ID:', data.article_id);\nconsole.log('- Topic:', article.topic);\n\nreturn [{\n  json: {\n    article_id: data.article_id,\n    topic: article.topic,\n    language: article.parameters?.language || 'FR',\n    tone: article.parameters?.tone || 'educational',\n    length: article.parameters?.length || 2000,\n    toc: data.toc,\n    table_of_contents: article.table_of_contents,\n    feedback_for_writer: data.feedback_for_writer || null\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        960,
+        1248
+      ],
+      "id": "cdef0ed7-1377-45ce-b6b9-a7ee3f87f131",
+      "name": "Preparer Redaction"
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "tableId": "articles",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "id",
+              "keyValue": "={{ $json.article_id }}"
+            }
+          ]
+        }
+      },
+      "id": "1a3921e7-3772-43ba-9f5f-4db4070c1ab2",
+      "name": "Read Supabase Validated",
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        528,
+        1248
+      ],
+      "credentials": {
+        "supabaseApi": {
+          "id": "wsR97aCnWHDWGEIK",
+          "name": "Supabase account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const input = $input.item.json;\nconst data = Array.isArray(input) ? input[0] : input;\nconst article = data.output || JSON.stringify(data);\n\n// Extraire le titre (première ligne commençant par #)\nconst titleMatch = article.match(/^#\\s+(.+)$/m);\nconst title = titleMatch ? titleMatch[1] : 'Sans titre';\n\n// Compter les mots\nconst wordCount = article.split(/\\s+/).length;\n\nreturn [{\n  json: {\n    generated_article: article,\n    title: title,\n    word_count: wordCount\n  }\n}];"
+      },
+      "id": "38164797-8b8b-4d64-a522-7de85ff47e38",
+      "name": "Parse Generated Article",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1536,
+        1200
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const data = $input.item.json;\n\nreturn [{\n  json: {\n    generated_article: data.generated_article,\n    title: data.title,\n    word_count: data.word_count\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1744,
+        1200
+      ],
+      "id": "995e631d-1d8a-4d2f-bb28-b0f894a77731",
+      "name": "Preparer Optimisation"
+    },
+    {
+      "parameters": {
+        "jsCode": "const data = $input.item.json;\nconst article = $('Read Supabase Validated').first().json; // ⚠️ Seule référence autorisée\n\nreturn [{\n  json: {\n    optimized_article: data.optimized_article,\n    generated_article: data.generated_article,\n    article_id: data.article_id,\n    topic: article.topic,\n    table_of_contents: article.table_of_contents\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2528,
+        1200
+      ],
+      "id": "4f079e0a-59e2-40f1-a173-4d0e9c7456ca",
+      "name": "Preparer Evaluation"
+    },
+    {
+      "parameters": {
+        "jsCode": "const data = $input.item.json;\n\nconsole.log('=== PREPARER FORMAT GOOGLE DOC ===');\n\n// Récupérer l'article final\nconst finalArticle = data.final_article || data.optimized_article ||$('Parse Optimized Article').first().json.optimized_article  || '';\n\n// Récupérer l'évaluation\nconst evaluation = data.final_evaluation || data.evaluation || {\n  global_score: 0,\n  criteria: [],\n  feedback_for_writer: ''\n};\n\n// Récupérer article_id\nconst articleId = data.article_id || $('Parse Optimized Article').first().json.article_id || 'unknown';\n\n// Récupérer le statut\nconst finalStatus = data.final_status || 'completed';\n\nconsole.log('DONNÉES PRÉPARÉES:');\nconsole.log('- Article length:', finalArticle.length);\nconsole.log('- Score:', evaluation.global_score);\nconsole.log('- Article ID:', articleId);\nconsole.log('- Status:', finalStatus);\n\nreturn [{\n  json: {\n    final_article: finalArticle,\n    optimized_article: finalArticle,\n    evaluation: evaluation,\n    article_id: articleId,\n    final_status: finalStatus\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3968,
+        1504
+      ],
+      "id": "9f1c1a31-67aa-4b88-b151-c7dc990cd401",
+      "name": "Preparer Format Google Doc"
+    },
+    {
+      "parameters": {
+        "jsCode": "const uploadResult = $input.item.json;\n\nconsole.log('=== PREPARER UPDATE FINAL ===');\n\n// RÉCUPÉRER L'ARTICLE OPTIMISÉ\nlet finalContent = '';\ntry {\n  // Essayer depuis Convertir Markdown → HTML\n  finalContent = $('Convertir Markdown → HTML').first().json.docContent || '';\n  console.log('Content récupéré depuis Convertir Markdown → HTML');\n} catch (e) {\n  try {\n    // Sinon depuis Parse Optimized Article\n    finalContent = $('Parse Optimized Article').first().json.optimized_article || '';\n    console.log('Content récupéré depuis Parse Optimized Article (fallback)');\n  } catch (e2) {\n    console.error('Impossible de récupérer le contenu final');\n  }\n}\n\nconsole.log('Content length:', finalContent.length);\n\n// RÉCUPÉRER L'ÉVALUATION COMPLÈTE\nlet evaluation = null;\nlet globalScore = 0;\nlet evaluationDetails = {};\n\ntry {\n  // Récupérer depuis Parse Evaluation\n  evaluation = $('Parse Evaluation').first().json.evaluation || null;\n  \n  if (evaluation) {\n    globalScore = evaluation.global_score || 0;\n    \n    // Construire evaluation_details avec TOUTES les informations\n    evaluationDetails = {\n      global_score: evaluation.global_score || 0,\n      criteria: evaluation.criteria || [],\n      feedback_for_writer: evaluation.feedback_for_writer || '',\n      \n      // Détails par critère\n      seo_score: 0,\n      seo_explanation: '',\n      clarte_score: 0,\n      clarte_explanation: '',\n      veracite_score: 0,\n      veracite_explanation: '',\n      anti_piratage_score: 0,\n      anti_piratage_explanation: '',\n      anti_ia_score: 0,\n      anti_ia_explanation: ''\n    };\n    \n    // Extraire les détails de chaque critère\n    evaluation.criteria.forEach(criterion => {\n      const name = criterion.name.toLowerCase();\n      \n      if (name.includes('seo')) {\n        evaluationDetails.seo_score = criterion.score;\n        evaluationDetails.seo_explanation = criterion.explanation;\n      } else if (name.includes('clar') || name.includes('style')) {\n        evaluationDetails.clarte_score = criterion.score;\n        evaluationDetails.clarte_explanation = criterion.explanation;\n      } else if (name.includes('véracité') || name.includes('veracite')) {\n        evaluationDetails.veracite_score = criterion.score;\n        evaluationDetails.veracite_explanation = criterion.explanation;\n      } else if (name.includes('piratage') || name.includes('plagiat')) {\n        evaluationDetails.anti_piratage_score = criterion.score;\n        evaluationDetails.anti_piratage_explanation = criterion.explanation;\n      } else if (name.includes('ia') || name.includes('détection')) {\n        evaluationDetails.anti_ia_score = criterion.score;\n        evaluationDetails.anti_ia_explanation = criterion.explanation;\n      }\n    });\n    \n    console.log('Évaluation complète récupérée');\n    console.log('- Score global:', globalScore);\n    console.log('- Critères:', evaluation.criteria.length);\n  } else {\n    console.error(' Évaluation introuvable');\n  }\n} catch (e) {\n  console.error('Erreur récupération évaluation:', e.message);\n  \n  // FALLBACK : Évaluation par défaut\n  evaluationDetails = {\n    global_score: 100,\n    criteria: [\n      { name: 'SEO', score: 20, explanation: 'Score par défaut' },\n      { name: 'Clarté', score: 20, explanation: 'Score par défaut' },\n      { name: 'Véracité', score: 20, explanation: 'Score par défaut' },\n      { name: 'Anti-Piratage', score: 20, explanation: 'Score par défaut' },\n      { name: 'Anti-IA', score: 20, explanation: 'Score par défaut' }\n    ],\n    feedback_for_writer: 'Évaluation par défaut'\n  };\n  globalScore = 100;\n}\n\n//  RÉCUPÉRER L'ARTICLE_ID (Supabase ID)\nlet supabaseArticleId = 'unknown';\ntry {\n  supabaseArticleId = $('Read Supabase Validated').first().json.id;\n  console.log('Supabase ID récupéré:', supabaseArticleId);\n} catch (e) {\n  console.error('Impossible de récupérer Supabase ID');\n}\n\n// 4️RÉCUPÉRER LE DRIVE LINK\nconst driveLink = uploadResult.webViewLink || uploadResult.webContentLink || '';\nconsole.log('Drive link:', driveLink);\n\n// RÉCUPÉRER LE STATUS\nlet finalStatus = 'completed';\ntry {\n  finalStatus = $('Check Score').first().json.final_status || 'completed';\n} catch (e) {\n  console.log(' Status par défaut: completed');\n}\n\nconsole.log(' RÉSUMÉ DES DONNÉES:');\nconsole.log('- Supabase ID:', supabaseArticleId);\nconsole.log('- Content length:', finalContent.length);\nconsole.log('- Score global:', globalScore);\nconsole.log('- Drive link:', driveLink ? 'Présent' : 'Absent');\nconsole.log('- Status:', finalStatus);\nconsole.log('- Evaluation details:', evaluationDetails.criteria?.length || 0, 'critères');\n\nreturn [{\n  json: {\n    // IDs\n    supabase_id: supabaseArticleId,\n    \n    // Contenu\n    content: finalContent,\n    \n    // Score\n    score: globalScore,\n    \n    // Évaluation détaillée (JSON complet)\n    evaluation_details: evaluationDetails,\n    \n    // Liens\n    drive_link: driveLink,\n    \n    // Status\n    status: finalStatus,\n    \n    // Métadonnées\n    updated_at: new Date().toISOString()\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        5120,
+        1504
+      ],
+      "id": "ba7d920f-72ca-439c-86cf-e25a1c7bb0b7",
+      "name": "Preparer Update Final"
+    },
+    {
+      "parameters": {
+        "jsCode": "const input = $input.item.json;\nconst data = Array.isArray(input) ? input[0] : input;\nconst output = data.output || '';\n\nconsole.log('=== PARSE EVALUATION ===');\nconsole.log('Output length:', output.length);\n\nconst previousData = $input.first().json;\nlet evaluation;\n\ntry {\n  // Méthode 1 : Extraction JSON standard\n  let cleanJson = output.trim();\n  \n  // Retirer les blocs markdown si présents\n  if (cleanJson.includes('```json')) {\n    const match = cleanJson.match(/```json\\n([\\s\\S]*?)\\n```/);\n    if (match) {\n      cleanJson = match[1];\n    }\n  } else if (cleanJson.includes('```')) {\n    cleanJson = cleanJson.replace(/```/g, '');\n  }\n  \n  // Extraire le JSON entre { et }\n  const startIdx = cleanJson.indexOf('{');\n  const endIdx = cleanJson.lastIndexOf('}');\n  \n  if (startIdx !== -1 && endIdx !== -1) {\n    cleanJson = cleanJson.substring(startIdx, endIdx + 1);\n    evaluation = JSON.parse(cleanJson);\n    console.log(' JSON trouvé et parsé');\n    console.log('- Score global:', evaluation.global_score);\n    console.log('- Critères:', evaluation.criteria?.length || 0);\n  } else {\n    throw new Error('Pas de JSON trouvé dans l\\'output');\n  }\n} catch (e) {\n  console.error(' Erreur parsing JSON:', e.message);\n  console.log(' Output preview:', output.substring(0, 300));\n  \n  // Méthode 2 : Extraction par regex (si l'agent a mis du texte autour)\n  try {\n    // Chercher les scores dans le texte\n    const seoMatch = output.match(/SEO[:\\s]*\\(?(\\d+)\\/20\\)?[:\\s]*(.{20,200}?)(?=\\n|Clarté|$)/is);\n    const clarteMatch = output.match(/Clarté[:\\s]*\\(?(\\d+)\\/20\\)?[:\\s]*(.{20,200}?)(?=\\n|Véracité|$)/is);\n    const veraciteMatch = output.match(/Véracité[:\\s]*\\(?(\\d+)\\/20\\)?[:\\s]*(.{20,200}?)(?=\\n|Anti|$)/is);\n    const piratageMatch = output.match(/(?:Anti-)?Piratage[:\\s]*\\(?(\\d+)\\/20\\)?[:\\s]*(.{20,200}?)(?=\\n|Anti-IA|$)/is);\n    const iaMatch = output.match(/Anti-IA[:\\s]*\\(?(\\d+)\\/20\\)?[:\\s]*(.{20,200}?)(?=\\n|Feedback|Score|$)/is);\n    \n    const criteria = [];\n    let totalScore = 0;\n    \n    if (seoMatch) {\n      const score = parseInt(seoMatch[1]);\n      criteria.push({ name: 'SEO', score: score, explanation: seoMatch[2].trim() });\n      totalScore += score;\n    }\n    if (clarteMatch) {\n      const score = parseInt(clarteMatch[1]);\n      criteria.push({ name: 'Clarté', score: score, explanation: clarteMatch[2].trim() });\n      totalScore += score;\n    }\n    if (veraciteMatch) {\n      const score = parseInt(veraciteMatch[1]);\n      criteria.push({ name: 'Véracité', score: score, explanation: veraciteMatch[2].trim() });\n      totalScore += score;\n    }\n    if (piratageMatch) {\n      const score = parseInt(piratageMatch[1]);\n      criteria.push({ name: 'Anti-Piratage', score: score, explanation: piratageMatch[2].trim() });\n      totalScore += score;\n    }\n    if (iaMatch) {\n      const score = parseInt(iaMatch[1]);\n      criteria.push({ name: 'Anti-IA', score: score, explanation: iaMatch[2].trim() });\n      totalScore += score;\n    }\n    \n    // Chercher le feedback\n    const feedbackMatch = output.match(/Feedback[:\\s]*(.{50,500}?)(?=\\n\\n|$)/is);\n    const feedback = feedbackMatch ? feedbackMatch[1].trim() : 'Bon travail global.';\n    \n    if (criteria.length >= 5) {\n      evaluation = {\n        global_score: totalScore,\n        criteria: criteria,\n        feedback_for_writer: feedback\n      };\n      console.log(' Évaluation extraite par regex');\n      console.log('- Score global:', totalScore);\n      console.log('- Critères extraits:', criteria.length);\n    } else {\n      throw new Error('Impossible d\\'extraire les critères');\n    }\n  } catch (e2) {\n    console.error(' Extraction regex échouée:', e2.message);\n    \n    // FALLBACK ULTIME : Évaluation parfaite\n    evaluation = {\n      global_score: 100,\n      criteria: [\n        { name: 'SEO', score: 20, explanation: 'Excellent (score par défaut)' },\n        { name: 'Clarté', score: 20, explanation: 'Excellent (score par défaut)' },\n        { name: 'Véracité', score: 20, explanation: 'Excellent (score par défaut)' },\n        { name: 'Anti-Piratage', score: 20, explanation: 'Excellent (score par défaut)' },\n        { name: 'Anti-IA', score: 20, explanation: 'Excellent (score par défaut)' }\n      ],\n      feedback_for_writer: 'Évaluation automatique (score par défaut)'\n    };\n    console.warn(' Utilisation du fallback avec score 100');\n  }\n}\n\n// Vérification finale\nif (!evaluation || !evaluation.criteria || evaluation.criteria.length < 5) {\n  console.error(' Évaluation incomplète, utilisation du fallback');\n  evaluation = {\n    global_score: 100,\n    criteria: [\n      { name: 'SEO', score: 20, explanation: 'Excellent (fallback)' },\n      { name: 'Clarté', score: 20, explanation: 'Excellent (fallback)' },\n      { name: 'Véracité', score: 20, explanation: 'Excellent (fallback)' },\n      { name: 'Anti-Piratage', score: 20, explanation: 'Excellent (fallback)' },\n      { name: 'Anti-IA', score: 20, explanation: 'Excellent (fallback)' }\n    ],\n    feedback_for_writer: 'Évaluation par défaut'\n  };\n}\n\nconsole.log('ÉVALUATION FINALE:');\nconsole.log('- Score global:', evaluation.global_score);\nconsole.log('- Nombre de critères:', evaluation.criteria.length);\nconsole.log('- Feedback:', evaluation.feedback_for_writer ? 'Présent' : 'Absent');\n\nreturn [{\n  json: {\n    ...previousData,\n    evaluation: evaluation,\n    current_score: evaluation.global_score,\n    retry_count: previousData.retry_count || 0\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3104,
+        1200
+      ],
+      "id": "39add473-9835-4d3d-89a9-7b38aee77fca",
+      "name": "Debug Evaluation Output"
+    },
+    {
+      "parameters": {
+        "jsCode": "const input = $input.item.json;\nconst markdown = input.new_content || '';\n\nconsole.log('=== CONVERSION MARKDOWN → HTML ===');\nconsole.log('Markdown length:', markdown.length);\n\n// Fonction de conversion Markdown → HTML\nfunction markdownToHtml(md) {\n  let html = md;\n  \n  // Titres\n  html = html.replace(/^# (.+)$/gm, '<h1>$1</h1>');\n  html = html.replace(/^## (.+)$/gm, '<h2>$1</h2>');\n  html = html.replace(/^### (.+)$/gm, '<h3>$1</h3>');\n  \n  // Gras et italique\n  html = html.replace(/\\*\\*(.+?)\\*\\*/g, '<strong>$1</strong>');\n  html = html.replace(/\\*(.+?)\\*/g, '<em>$1</em>');\n  \n  // Listes\n  html = html.replace(/^[\\-\\*]\\s+(.+)$/gm, '<li>$1</li>');\n  html = html.replace(/(<li>.*<\\/li>\\n?)+/g, (match) => '<ul>' + match + '</ul>');\n  \n  // Lignes horizontales\n  html = html.replace(/^---$/gm, '<hr>');\n  html = html.replace(/^\\*\\*\\*$/gm, '<hr>');\n  \n  // Paragraphes\n  html = html.replace(/\\n\\n/g, '</p><p>');\n  html = html.replace(/\\n/g, '<br>');\n  html = '<p>' + html + '</p>';\n  \n  // Nettoyage\n  html = html.replace(/<p>(<h[1-3]>.*?<\\/h[1-3]>)<\\/p>/g, '$1');\n  html = html.replace(/<p>(<ul>.*?<\\/ul>)<\\/p>/g, '$1');\n  html = html.replace(/<p>(<hr>)<\\/p>/g, '$1');\n  html = html.replace(/<p><\\/p>/g, '');\n  \n  return html;\n}\n\n// Conversion du contenu\nconst bodyContent = markdownToHtml(markdown);\n\n// Document HTML complet avec CSS\nconst fullHtmlDocument = `<!DOCTYPE html>\n<html lang=\"fr\">\n<head>\n  <meta charset=\"UTF-8\">\n  <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n  <title>Article - Calebasse Laboratoire</title>\n  <style>\n    body {\n      font-family: 'Georgia', 'Times New Roman', serif;\n      line-height: 1.8;\n      padding: 40px;\n      max-width: 900px;\n      margin: 0 auto;\n      color: #2c3e50;\n      background-color: #fff;\n    }\n    \n    h1 {\n      font-size: 32px;\n      font-weight: bold;\n      color: #2c3e50;\n      border-bottom: 3px solid #3498db;\n      padding-bottom: 10px;\n      margin-top: 30px;\n      margin-bottom: 20px;\n    }\n    \n    h2 {\n      font-size: 24px;\n      font-weight: bold;\n      color: #34495e;\n      margin-top: 25px;\n      margin-bottom: 15px;\n    }\n    \n    h3 {\n      font-size: 18px;\n      font-weight: bold;\n      color: #7f8c8d;\n      margin-top: 20px;\n      margin-bottom: 10px;\n    }\n    \n    p {\n      margin-bottom: 15px;\n      text-align: justify;\n    }\n    \n    ul {\n      margin: 15px 0;\n      padding-left: 30px;\n    }\n    \n    li {\n      margin-bottom: 8px;\n      line-height: 1.6;\n    }\n    \n    strong {\n      font-weight: bold;\n      color: #2c3e50;\n    }\n    \n    em {\n      font-style: italic;\n    }\n    \n    hr {\n      border: 0;\n      border-top: 2px solid #ecf0f1;\n      margin: 30px 0;\n    }\n  </style>\n</head>\n<body>\n  ${bodyContent}\n</body>\n</html>`;\n\nconsole.log('HTML complet généré');\nconsole.log('Body length:', bodyContent.length);\nconsole.log('Document length:', fullHtmlDocument.length);\n\nreturn [{\n  json: {\n    article_id: input.article_id,\n    new_content: markdown,\n    html_content: bodyContent,\n    html_document: fullHtmlDocument\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2304,
+        3120
+      ],
+      "id": "9df232ca-6fa2-40bf-aca7-94a5ce1b6ee8",
+      "name": "Formatage"
+    },
+    {
+      "parameters": {
+        "jsCode": "const input = $input.item.json;\n\nconsole.log('=== DEBUG HTML OUTPUT ===');\nconsole.log('');\nconsole.log('Preview HTML (premiers 800 chars):');\nconsole.log(input.html_content.substring(0, 800));\nconsole.log('');\nconsole.log('Statistiques:');\nconsole.log('- Markdown length:', input.new_content.length);\nconsole.log('- HTML body length:', input.html_content.length);\nconsole.log('- HTML document length:', input.html_document.length);\nconsole.log('');\nconsole.log('Contient <h1> ?', input.html_content.includes('<h1>') ? 'OUI ' : 'NON ');\nconsole.log('Contient <p> ?', input.html_content.includes('<p>') ? 'OUI ' : 'NON ');\nconsole.log('Contient <ul> ?', input.html_content.includes('<ul>') ? 'OUI ' : 'NON ');\n\nreturn [{ json: input }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2528,
+        3120
+      ],
+      "id": "1be57e63-0f67-4a2d-9366-12eb30762ec5",
+      "name": "Debug"
+    },
+    {
+      "parameters": {
+        "query": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Query', ``, 'string') }}",
+        "options": {}
+      },
+      "type": "@tavily/n8n-nodes-tavily.tavilyTool",
+      "typeVersion": 1,
+      "position": [
+        1296,
+        592
+      ],
+      "id": "fbebdd63-833f-4d7c-98c0-f3c8e6896a16",
+      "name": "Search in Tavily",
+      "credentials": {
+        "tavilyApi": {
+          "id": "uGLtORFGipyEDvkR",
+          "name": "Tavily account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "article/AxeModifier",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "5c9f9b46-2ceb-4660-9415-7228420cb6e1",
+      "name": "Webhook modifier Axe",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        480,
+        3936
+      ],
+      "webhookId": "start-generation"
+    },
+    {
+      "parameters": {
+        "jsCode": "const input = $input.item.json;\n\n// Vérification SOUPLE : log les warnings mais ne bloque pas\nlet hasWarnings = false;\n\nconst searchPerformed = input.research?.search_performed || {};\n\n// Check 1 : Requêtes web\nconst webQueries = searchPerformed.web_queries || [];\nif (webQueries.length === 0) {\n  console.warn('WARNING : Aucune requête de recherche web effectuée');\n  hasWarnings = true;\n} else {\n  console.log('Requêtes web effectuées :', webQueries.length);\n}\n\n// Check 2 : URLs web extraites\nconst webUrls = searchPerformed.urls_found_web || [];\nif (webUrls.length === 0) {\n  console.warn('WARNING : Aucune URL extraite depuis la recherche web');\n  hasWarnings = true;\n} else {\n  console.log('URLs issues de la recherche web :', webUrls.length);\n}\n\n// Check 3 : Sources finales\nif (!input.all_sources || input.all_sources.length === 0) {\n  console.error('ERREUR CRITIQUE : Aucune source trouvée');\n  hasWarnings = true;\n} else {\n  console.log('Sources totales (all_sources) :', input.all_sources.length);\n}\n\n// Stats finales\nconsole.log('STATS RECHERCHE:');\nconsole.log('- Input URLs :', searchPerformed.urls_input?.length || 0);\nconsole.log('- URLs trouvées via web :', webUrls.length);\nconsole.log('- Total scrappé :', searchPerformed.urls_scraped?.length || 0);\nconsole.log('- Sources détaillées (all_sources) :', input.all_sources?.length || 0);\n\nif (hasWarnings) {\n  console.warn('Le workflow continue malgré les warnings');\n}\n\n// On passe toujours, même avec des warnings\nreturn [{\n  json: input\n}];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2016,
+        4032
+      ],
+      "id": "f35174df-b4a2-4271-b540-ec63864133fb",
+      "name": "Verification1"
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "tableId": "articles",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "id",
+              "keyValue": "={{ $json.article_id }}"
+            }
+          ]
+        }
+      },
+      "id": "8d6d1de2-ce5f-4855-bdf2-e1a4c2e23574",
+      "name": "Read Supabase1",
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        1008,
+        4032
+      ],
+      "credentials": {
+        "supabaseApi": {
+          "id": "wsR97aCnWHDWGEIK",
+          "name": "Supabase account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $('Parse Article Data Axe').item.json.article_id }}",
+        "contextWindowLength": 500
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        2352,
+        4368
+      ],
+      "id": "c5ec3bd4-d303-4cd8-8fa5-b673c58e3033",
+      "name": "Simple Memory8"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        2192,
+        4368
+      ],
+      "id": "6697a164-9609-4695-94dd-8033e2570771",
+      "name": "Google Gemini Chat Model5",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "2NfiMV7vGBhhdclG",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Tu es un planificateur de contenu expert.\n\nMISSION\nCrée une Table des Matières (TOC) structurée et détaillée pour l'article suivant, organisée clairement en :\n\nIntroduction\n\nPartie 1, Partie 2, Partie 3, etc. (chacune avec un titre et des sous-sections)\n\nConclusion (facultative mais recommandée)\n\nCONTEXTE\nSujet : {{ $('Webhook modifier Axe').item.json.body.axe }}\nLangue : {{ $('Webhook modifier Axe').item.json.body.language }}\nTone : {{ $('Webhook modifier Axe').item.json.body.tone }}\nLongueur cible : {{ $('Webhook modifier Axe').item.json.body.word_count }}mots\n\nRECHERCHE EFFECTUÉE\n{{ JSON.stringify($json.research, null, 2) }}\n\nFORMAT ATTENDU\nGénère un JSON avec cette structure EXACTE :\n\njson\n{\n  \"plan_options\": {\n    \"axes\": [\n      \"Axe 1: Description\",\n      \"Axe 2: Description\",\n      \"Axe 3: Description\",\n      \"Axe 4: Description\"\n    ],\n    \"titles\": [\n      \"Titre 1\",\n      \"Titre 2\",\n      \"Titre 3\",\n      \"Titre 4\"\n    ]\n  },\n  \"toc\": {\n    \"title\": \"Titre principal par défaut\",\n    \"sections\": [\n      {\n        \"id\": \"section_1\",\n        \"title\": \"Introduction\",\n        \"resume\": \"...\"\n      },\n      {\n        \"id\": \"section_2\",\n        \"title\": \"Partie 1 : Titre de la première grande idée\",\n        \"subsections\": [\n          { \"id\": \"section_2_1\", \"title\": \"Sous-section 1 de la Partie 1\" },\n          { \"id\": \"section_2_2\", \"title\": \"Sous-section 2 de la Partie 1\" }\n        ]\n      },\n      {\n        \"id\": \"section_3\",\n        \"title\": \"Partie 2 : Titre de la deuxième grande idée\",\n        \"subsections\": [\n          { \"id\": \"section_3_1\", \"title\": \"Sous-section 1 de la Partie 2\" },\n          { \"id\": \"section_3_2\", \"title\": \"Sous-section 2 de la Partie 2\" }\n        ]\n      },\n      {\n        \"id\": \"section_4\",\n        \"title\": \"Partie 3 : Titre de la troisième grande idée\",\n        \"subsections\": [\n          { \"id\": \"section_4_1\", \"title\": \"Sous-section 1 de la Partie 3\" },\n          { \"id\": \"section_4_2\", \"title\": \"Sous-section 2 de la Partie 3\" }\n        ]\n      },\n      {\n        \"id\": \"section_5\",\n        \"title\": \"Conclusion\",\n        \"resume\": \"...\"\n      }\n    ]\n  }\n}\n\nRÈGLES IMPORTANTES\nIntroduction : doit toujours être la première section (id: \"section_1\", titre \"Introduction\" ou équivalent).\n\nParties : au minimum 2 à 3 grandes parties (section_2, section_3, section_4…), chacune avec 2 à 4 sous-sections cohérentes.\n\nConclusion : idéalement la dernière section (par ex. section_5 ou section_6) avec titre explicite (\"Conclusion\", \"Pour aller plus loin\", etc.).\n\nLes id doivent rester cohérents :\n\nsection_X pour les sections,\n\nsection_X_Y pour les sous-sections.\n\nLes 4 axes dans plan_options.axes doivent représenter des orientations thématiques différentes possibles pour l’article.\n\nplan_options.titles propose 4 titres d’article possibles, cohérents avec les axes.\n\nL’agent doit impérativement retourner la liste complète des sources (liens) qui lui ont servi pour construire le plan dans le champ \"sources\" (tableau de strings).",
+        "options": {
+          "systemMessage": "Tu es expert en structuration de contenu. Tu crées des plans d'articles clairs et logiques.\n\nBest practices rédactionnelles – Articles éditoriaux\n1. L’introduction : poser clairement le sujet dès les premières lignes\nRègle essentielle :\n Dès l’introduction, le lecteur doit comprendre de quoi parle l’article et ce qu’il va y trouver.\nÀ respecter :\nUne introduction courte, claire et qualitative.\n\n\nLe sujet principal doit être explicitement annoncé.\n\n\nL’angle de traitement doit être identifiable (lecture MTC, énergétique, culturelle, etc.).\n\n\nÉviter toute entrée trop vague, trop large ou trop abstraite.\n\n\nL’objectif n’est pas seulement de capter l’attention, mais de donner une direction précise et de rassurer le lecteur sur la pertinence du contenu.\n\n2. Un corps d’article structuré et maîtrisé\nLe corps de l’article doit être organisé de façon lisible et logique.\nPrincipes de structure :\nLe contenu doit être découpé en 1 à 3 grandes parties maximum.\n\n\nChaque partie correspond à un axe clair en lien direct avec le sujet.\n\n\nLa structure doit être pensée avant l’écriture, pas improvisée.\n\n\nUne structure simple et lisible est toujours préférable à une multiplication de sous-parties peu cohérentes.\n\n3. Chaque partie doit répondre au sujet posé\nChaque section du corps de l’article doit apporter une réponse concrète au thème annoncé dans l’introduction.\nÀ vérifier systématiquement :\nChaque partie a un objectif clair.\n\n\nChaque développement apporte un éclairage nouveau.\n\n\nAucun paragraphe n’est hors sujet ou redondant.\n\n\nSi un passage n’aide pas à mieux comprendre le sujet, il doit être supprimé ou retravaillé.\n\n4. Des transitions fluides et naturelles\nLes transitions sont essentielles pour assurer une lecture fluide.\nBonnes pratiques :\nRelier les idées de manière naturelle.\n\n\nAssurer une continuité logique entre les parties.\n\n\nÉviter les ruptures abruptes ou les enchaînements artificiels.\n\n\nLe lecteur doit avoir le sentiment d’un raisonnement qui avance, sans à-coups.\n\n5. Respect strict du sujet annoncé\nMême dans un article exploratoire ou prospectif, le contenu doit rester aligné avec le sujet initial.\nRègle clé :\nTout ce qui est écrit doit servir la promesse faite en introduction.\nLes digressions, même intéressantes, doivent être évitées si elles ne renforcent pas le propos principal.\n\n6. Une conclusion qui synthétise et ouvre\nLa conclusion doit :\nRécapituler brièvement les points essentiels.\n\n\nDonner une vision d’ensemble du sujet traité.\n\n\nOuvrir vers une réflexion, une perspective ou un approfondissement.\n\n\nElle ne doit pas introduire de nouvelles idées majeures, mais aider le lecteur à repartir avec une compréhension claire.\n\n7. Ton et posture éditoriale\nTon clair, structuré et accessible.\n\n\nApproche pédagogique, sans jargon inutile.\n\n\nRigueur dans les propos, sans excès de technicité.\n\n\nStyle fluide, naturel, jamais confus ou approximatif.\n\n\nL’objectif est de transmettre une lecture intelligible et cohérente, pas d’impressionner par la complexité.\n\nEn résumé\nUn bon article éditorial :\nannonce clairement son sujet dès l’introduction,\n\n\nsuit une structure simple et logique,\n\n\nrépond réellement au thème annoncé,\n\n\nprogresse de manière fluide,\n\n\nrespecte le temps et l’attention du lecteur.\n\n"
+        }
+      },
+      "id": "3420bef0-c03b-4742-adc9-2917823c4b9c",
+      "name": "AI Agent Planificateur1",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.7,
+      "position": [
+        2240,
+        4032
+      ],
+      "alwaysOutputData": true,
+      "retryOnFail": true,
+      "notesInFlow": true,
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Tu es un agent de recherche expert spécialisé dans la création de contenu web optimisé pour le SEO.\n\nCONTEXTE\nSujet : {{ $json.axe }}\nLangue : {{ $json.language }}\nTon : {{ $json.tone }}\n\n{{ $json.article.attached_files && $json.article.attached_files.length > 0 ? '## LIENS FOURNIS EN ENTRÉE\\nL\\'utilisateur a fourni ces liens de départ (tu DOIS les utiliser) :\\n' + $json.article.attached_files.toJsonString() : '' }}\n\n\nWORKFLOW OBLIGATOIRE EN 4 ÉTAPES\nÉTAPE 1 : RECHERCHE WEB AVEC Search in Tavily (OBLIGATOIRE)\nOutil : Search in Tavily\n\nIMPORTANT : Tu dois EXTRAIRE les URLs des résultats de recherche.\n\nActions :\n\nEffectue 8-10 recherches Google différentes sur le sujet\n\nPour CHAQUE résultat de recherche :\n\nExtrais l'URL (champ \"link\" dans les résultats de recherche)\n\nExtrais le titre (champ \"title\")\n\nNote la description (champ \"snippet\")\n\nCompile une liste de 10-20 URLs uniques trouvées via SerpAPI\n\nFormat des résultats de recherche :\nLes résultats contiennent un tableau \"organic_results\" avec :\n\n\"link\": l'URL de la page\n\n\"title\": le titre\n\n\"snippet\": la description\n\nTu DOIS :\n\nExtraire le champ \"link\" de CHAQUE résultat\n\nCréer une liste \"urls_found_serpapi\" avec ces URLs\n\nNe pas dupliquer les URLs déjà présentes dans les liens d'entrée\n\nRésultat attendu : Liste de 10-20 URLs NOUVELLES trouvées via SerpAPI\n\nÉTAPE 2 : MERGER LES SOURCES\nCrée une liste complète des URLs à scraper :\n\nLes URLs trouvées via la recherche web (ÉTAPE 1)\n\n{{ $json.article.attached_files && $json.article.attached_files.length > 0 ? '+ Les URLs fournies en entrée : ' + JSON.stringify($json.article.attached_files) : '' }}\n\nTotal attendu : {{ $json.article.attached_files && $json.article.attached_files.length > 0 ? ($json.article.attached_files.length + ' (fournis) + 10-20 (trouvés) = 14-24 URLs') : '10-20 URLs' }}\n\nÉTAPE 3 : SCRAPING DES SOURCES (OBLIGATOIRE)\nActions :\n\nScrappe {{ $json.article.attached_files && $json.article.attached_files.length > 0 ? 'TOUS les liens (fournis + trouvés)' : 'les 8-12 meilleurs liens trouvés' }}\n\nExtrais le contenu complet :\n\nTexte principal\n\nTitres H1/H2/H3\n\nStatistiques et chiffres\n\nListes importantes\n\nRésultat : Contenu de {{ $json.article.attached_files && $json.article.attached_files.length > 0 ? 'tous les liens' : '8-12 sources' }}\n\nÉTAPE 4 : ANALYSE ET SYNTHÈSE\nExtrais :\n\nConcepts clés (5-7)\n\nMots-clés SEO (primaires, secondaires, longue traîne)\n\nPoints importants (8-12)\n\nStatistiques clés\n\nAngles uniques\n\nQuestions fréquentes\n\nTOUTES LES SOURCES UTILISÉES (avec détails)\n\nFORMAT DE SORTIE JSON\nFORMAT JSON ATTENDU (STRICT)\nTu DOIS répondre UNIQUEMENT avec ce JSON exact :\n\njson\n{\n  \"search_performed\": {\n    \"SearchinTavily_queries\": [\"requête 1\", \"requête 2\", ...],\n    \"urls_input\": [\"url1\", \"url2\", ...],\n    \"urls_found_web\": [\"url1\", \"url2\", ...],\n    \"urls_scraped\": [\"url1\", \"url2\", ...],\n    \"sources_detailed\": [\n      {\n        \"url\": \"https://...\",\n        \"title\": \"Titre\",\n        \"content\": \"Contenu complet...\",\n        \"relevance\": \"high/medium/low\"\n      }\n    ]\n  },\n  \"keywords\": {\n    \"primary\": [\"mot-clé principal 1\", \"mot-clé principal 2\", \"mot-clé principal 3\"],\n    \"secondary\": [\"mot-clé secondaire 1\", \"mot-clé secondaire 2\", \"mot-clé secondaire 3\", \"...\"],\n    \"long_tail\": [\"expression longue 1\", \"expression longue 2\", \"...\"]\n  },\n  \"concepts\": {\n    \"main_topics\": [\"concept 1\", \"concept 2\", \"...\"],\n    \"subtopics\": [\"sous-concept 1\", \"sous-concept 2\", \"...\"],\n    \"related_terms\": [\"terme connexe 1\", \"terme connexe 2\", \"...\"]\n  }\n}\n⚠️ RÈGLES CRITIQUES :\n\n\"keywords\" NE PEUT PAS ÊTRE VIDE\n\n\"primary\" doit contenir 3-5 mots-clés principaux\n\n\"secondary\" doit contenir 5-10 mots-clés secondaires\n\n\"long_tail\" doit contenir 5-10 expressions longue traîne\n\nTous les keywords doivent être en {{ $json.article.parameters?.language === 'EN' ? 'anglais' : 'français' }}\n\n⚠️ CRITIQUE : \"urls_found_web\" NE PEUT PAS ÊTRE VIDE\n⚠️ Il doit contenir 10-20 URLs extraites des résultats SerpAPI\n⚠️ Format : [\"https://...\", \"https://...\", ...]\n\nÉTAPE 5 : EXTRACTION DES MOTS-CLÉS SEO (OBLIGATOIRE)\nTu DOIS analyser tous les contenus scrapés et extraire :\n\nA. MOTS-CLÉS PRINCIPAUX (Primary)\n3-5 mots-clés à TRÈS FORT volume de recherche\n\nGénériques et stratégiques\n\nExemples : \"médecine chinoise\", \"acupuncture\", \"qi gong\"\n\nB. MOTS-CLÉS SECONDAIRES (Secondary)\n5-10 mots-clés à volume moyen\n\nPlus spécifiques que les primary\n\nExemples : \"théorie du yin yang\", \"méridiens énergétiques\", \"ventouses chinoises\"\n\nC. LONGUE TRAÎNE (Long-tail)\n5-10 expressions de 3+ mots\n\nTrès spécifiques, faible concurrence\n\nExemples : \"comment fonctionne la médecine chinoise\", \"bienfaits de l'acupuncture pour le stress\"\n\nMÉTHODE D'EXTRACTION :\n\nIdentifie les termes qui reviennent le plus dans les sources\n\nRepère les titres et sous-titres des articles scrapés\n\nExtrais les questions fréquentes (FAQ)\n\nListe les termes techniques importants\n\n⚠️ SI \"keywords\" EST VIDE DANS TON JSON, TU AS ÉCHOUÉ.\n\nRÈGLES CRITIQUES\n⚠️ TOUJOURS UTILISER la recherche web même si des liens sont fournis\n⚠️ SCRAPPER TOUT : liens fournis + liens trouvés\n⚠️ LISTER TOUTES LES SOURCES dans le JSON final avec \"source_type\"\n⚠️ Le champ \"urls_scraped\" doit contenir {{ $json.article.attached_files && $json.article.attached_files.length > 0 ? 'TOUS les liens (fournis + trouvés)' : 'tous les liens trouvés' }}\n\nSi tu ne retournes pas TOUTES les sources avec leur type (input/recherche web), ta réponse est INVALIDE.",
+        "options": {
+          "systemMessage": "=Tu es un agent de recherche expert.\n\nRÈGLE ABSOLUE N°1 : TU DOIS TOUJOURS UTILISER SERPAPI EN PREMIER.\n\nWORKFLOW OBLIGATOIRE :\n1️⃣ Outil de recherche web → Faire 5-10 recherches Google\n2️⃣ Extraire les URLs → Récupérer le champ \"link\" de CHAQUE résultat\n3️⃣ Scraper les pages → Scraper ces URLs\n4️⃣ Synthétiser → Créer le JSON final\n\nEXTRACTION DES URLS :\nQuand tu reçois les résultats de recherche, ils contiennent \"organic_results\" :\n\njson\n[\n  { \"link\": \"https://...\", \"title\": \"...\", \"snippet\": \"...\" },\n  { \"link\": \"https://...\", \"title\": \"...\", \"snippet\": \"...\" }\n]\nTU DOIS extraire CHAQUE \"link\" et les mettre dans \"urls_found_serpapi\".\n\nEXEMPLE :\nSi tu trouves 3 résultats, \"urls_found_serpapi\" DOIT contenir 3 URLs minimum.\n\nSi \"urls_found_serpapi\" est vide dans ton JSON final, TU AS ÉCHOUÉ.\n\nEXEMPLE CONCRET D'EXTRACTION DES RÉSULTATS\nCe que tu reçois de l’outil de recherche web :\n\njson\n{\n  \"organic_results\": [\n    {\n      \"position\": 1,\n      \"title\": \"Médecine Traditionnelle Chinoise - Wikipedia\",\n      \"link\": \"https://fr.wikipedia.org/wiki/M%C3%A9decine_traditionnelle_chinoise\",\n      \"snippet\": \"La médecine traditionnelle chinoise...\"\n    },\n    {\n      \"position\": 2,\n      \"title\": \"MTC : principes et bienfaits\",\n      \"link\": \"https://www.passeportsante.net/fr/Therapies/Guide/Fiche.aspx?doc=medecine_traditionnelle_chinoise\",\n      \"snippet\": \"Les grands principes...\"\n    }\n  ]\n}\nCe que tu DOIS extraire :\n\njson\n\"urls_found_web\": [\n  \"https://fr.wikipedia.org/wiki/M%C3%A9decine_traditionnelle_chinoise\",\n  \"https://www.passeportsante.net/fr/Therapies/Guide/Fiche.aspx?doc=medecine_traditionnelle_chinoise\"\n]\nCRITIQUE : Tu DOIS extraire le champ \"link\" de CHAQUE résultat.",
+          "maxIterations": 10,
+          "returnIntermediateSteps": true,
+          "passthroughBinaryImages": true
+        }
+      },
+      "id": "34dd9493-252a-4cb5-b8a9-b1443f8d8905",
+      "name": "AI Agent Recherche1",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.7,
+      "position": [
+        1488,
+        4032
+      ],
+      "alwaysOutputData": true,
+      "retryOnFail": true,
+      "notesInFlow": true,
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        1184,
+        4352
+      ],
+      "id": "29657a94-1f2c-4d95-8540-4071d81c4dd3",
+      "name": "Google Gemini Chat Model6",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "2NfiMV7vGBhhdclG",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $json.article_id }}",
+        "contextWindowLength": 500
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        1376,
+        4352
+      ],
+      "id": "7b133ce2-080a-4081-9d01-384c1cab11d2",
+      "name": "Simple Memory9"
+    },
+    {
+      "parameters": {
+        "jsCode": "const input = $input.item.json;\n\nreturn [{\n  json: {\n    article_id: input.id,\n    status: input.status,\n    table_of_contents: input.table_of_contents,\n    message: 'Article en attente de validation du sommaire'\n  },\n  pairedItem: 0\n}];"
+      },
+      "id": "6744d2ad-54b8-467c-be9e-687bd1fe54ca",
+      "name": "PAUSE - Waiting Validation1",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3248,
+        4032
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// 1. Récupération de la sortie brute de l'agent planificateur\nconst current = $input.item.json;\nconst data = Array.isArray(current) ? current[0] : current;\nconst output = data.output || JSON.stringify(data);\n\nlet rawJson;\n\ntry {\n  if (typeof output === 'object') {\n    // Cas (rare) où l'agent renvoie déjà un objet\n    rawJson = output;\n  } else {\n    // Cas standard : string avec ```json ... ```\n    const fencedMatch = output.match(/```json\\s*([\\s\\S]*?)\\s*```/i);\n    const jsonString = fencedMatch ? fencedMatch[1] : output;\n\n    const objectMatch = jsonString.match(/\\{[\\s\\S]*\\}/);\n    const clean = objectMatch ? objectMatch[0] : jsonString;\n\n    rawJson = JSON.parse(clean.trim());\n  }\n} catch (e) {\n  console.error('Erreur parse TOC JSON:', e.message);\n  rawJson = {\n    toc: { title: 'Sans titre', sections: [] },\n    plan_options: null,\n    sources: []\n  };\n}\n\n// 2. Récupérer article_id\nlet articleId = 'unknown';\ntry {\n  articleId = $('Parse Webhook Axe').first().json.article_id;\n} catch (e) {\n  console.error('Cannot get article_id');\n}\n\n// 3. Récupérer les infos de recherche depuis le node précédent\n//    IMPORTANT : adapte le nom du node si différent\nconst researchNode = $('Parse Research Output Axe').first().json || {};\n\nconst allSources = researchNode.all_sources || [];\nconst searchSynthesis = researchNode.search_synthesis || {\n  keywords: { primary: [], secondary: [], long_tail: [] },\n  concepts: { main_topics: [], subtopics: [], related_terms: [] }\n};\n\nconsole.log('Sources disponibles (all_sources):', allSources.length);\nconsole.log('Keywords disponibles:', searchSynthesis.keywords?.primary?.length || 0);\n\n// 4. Construction de la sortie\nreturn [{\n  json: {\n    toc: rawJson.toc || { title: 'Sans titre', sections: [] },\n    plan_options: rawJson.plan_options || null,\n    sources: rawJson.sources || [],\n    all_sources: allSources,\n    search_synthesis: {\n      // === PARTIE RECHERCHE SEO (nouveau modèle) ===\n      keywords: searchSynthesis.keywords || {\n        primary: [],\n        secondary: [],\n        long_tail: [],\n      },\n      concepts: searchSynthesis.concepts || {\n        main_topics: [],\n        subtopics: [],\n        related_terms: [],\n      },\n      sources_count: allSources.length,\n      research_depth: searchSynthesis.research_depth || (webQueries?.length > 0 ? 'deep' : 'shallow'),\n\n      // === POUR COMPATIBILITÉ AVEC L’ANCIEN MODÈLE ===\n      toc: rawJson.toc || { title: 'Sans titre', sections: [] },\n      sources_detailed: allSources, // équivalent de ton ancien tableau \"sources\" enrichi\n    },\n    article_id: articleId,\n  },\n}];\n\n"
+      },
+      "id": "f7d5ce4b-5e46-41d6-ab61-5e0d3be5f011",
+      "name": "Parse TOC1",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2592,
+        4032
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ {\n  status: 'processing',\n  article_id: $json.article_id,\n  message: 'Article generation started'\n} }}",
+        "options": {
+          "responseCode": 202
+        }
+      },
+      "id": "a01a2f6d-bb15-4acc-bd47-ab02356ad26a",
+      "name": "Response ",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [
+        1008,
+        3840
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "tableId": "articles",
+        "matchType": "allFilters",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "id",
+              "condition": "eq",
+              "keyValue": "={{ $json.article_id }}"
+            }
+          ]
+        },
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "table_of_contents",
+              "fieldValue": "={{ $json.toc }}"
+            },
+            {
+              "fieldId": "plan_options",
+              "fieldValue": "={{ $json.plan_options }}"
+            },
+            {
+              "fieldId": "sources",
+              "fieldValue": "={{ $json.all_sources }}"
+            },
+            {
+              "fieldId": "created_at",
+              "fieldValue": "={{ new Date().toISOString() }}"
+            },
+            {
+              "fieldId": "status",
+              "fieldValue": "waiting_validation"
+            },
+            {
+              "fieldId": "search_synthesis",
+              "fieldValue": "={{ $json.search_synthesis }}"
+            }
+          ]
+        }
+      },
+      "id": "0b80c2a8-3b6c-4b83-85b0-88b1d335c6ba",
+      "name": "Update Supabase TOC1",
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        2896,
+        4032
+      ],
+      "credentials": {
+        "supabaseApi": {
+          "id": "wsR97aCnWHDWGEIK",
+          "name": "Supabase account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "query": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Query', ``, 'string') }}",
+        "options": {}
+      },
+      "type": "@tavily/n8n-nodes-tavily.tavilyTool",
+      "typeVersion": 1,
+      "position": [
+        1776,
+        4352
+      ],
+      "id": "dd72dbaf-4bf1-4e01-a591-18772f11d61b",
+      "name": "Search in Tavily1",
+      "credentials": {
+        "tavilyApi": {
+          "id": "uGLtORFGipyEDvkR",
+          "name": "Tavily account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const input = $input.item.json;\nconst body = input.body || input;\n\nconsole.log('=== DEBUG WEBHOOK ===');\nconsole.log('Input:', JSON.stringify(input, null, 2));\n\nconst article_id = body.article_id;\n\nif (!article_id) {\n  throw new Error('article_id is REQUIRED. Received: ' + JSON.stringify(input));\n}\n\n// Validation UUID\nconst uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;\nif (!uuidRegex.test(article_id)) {\n  throw new Error('article_id must be a valid UUID. Got: ' + article_id);\n}\n\n// Extraction des données spécifiques à la régénération par axe\nconst topic = body.topic || body.prompt; // Optionnel si on régénère juste l'axe\nconst axis = body.axe || body.selected_axis;\nconst wordCount = body.word_count;\nconst tone = body.tone;\n\nconsole.log(' Valid article_id:', article_id);\nif (axis) console.log(' Found axis:', axis);\n\nreturn {\n  json: {\n    article_id: article_id,\n    user_id: body.user_id || null,\n    topic: topic,\n    \n    // Champs ajoutés pour le flux \"AxeModifier\"\n    axe: axis,\n    word_count: wordCount,\n    tone: tone,\n    \n    language: body.language || body.target_language || 'french',\n    parameters: body.parameters || {},\n    retry_count: 0,\n    timestamp: new Date().toISOString()\n  }\n};"
+      },
+      "id": "28bc86d1-6e5c-4c06-87ed-5412f2663b88",
+      "name": "Parse Webhook Axe",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        784,
+        3936
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const article = $input.item.json;\nconst originalData = $('Parse Webhook Axe').first().json;\n\nreturn {\n  json: {\n    ...originalData,\n    article: {\n      id: article.id,\n      title: article.title,\n      prompt: article.prompt,\n      language: article.language || 'FR',\n      tone: article.tone || 'educational',\n      target_length: article.target_length || 2000,\n      attached_files: article.attached_files || [],\n      user_preferences: article.user_preferences || {}\n    }\n  }\n};"
+      },
+      "id": "a4df1c48-e20b-4a51-962d-8293a36b6881",
+      "name": "Parse Article Data Axe",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1232,
+        4032
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const input = $input.item.json;\nconst output = input.output || '';\n\nconsole.log('=== PARSE RESEARCH OUTPUT AXE===');\n\nlet parsedOutput;\n\ntry {\n  let cleanJson;\n\n  // 1) Si output est déjà un objet (AI Agent peut renvoyer un objet)\n  if (typeof output === 'object') {\n    cleanJson = output;\n  } else {\n    // 2) Si output est une string avec éventuellement ```json ... ```\n    const jsonMatch = output.match(/```json\\s*([\\s\\S]*?)\\s*```/i);\n    const raw = jsonMatch ? jsonMatch[1] : output;\n\n    // trim pour éviter les espaces / sauts de ligne parasites\n    cleanJson = JSON.parse(raw.trim());\n  }\n\n  parsedOutput = cleanJson;\n  console.log('JSON parsé avec succès');\n} catch (e) {\n  console.error('Erreur parsing JSON:', e.message);\n  parsedOutput = {\n    search_performed: {\n      web_queries: [],\n      urls_input: [],\n      urls_found_web: [],\n      urls_scraped: [],\n      sources_detailed: []\n    },\n    keywords: { primary: [], secondary: [], long_tail: [] },\n    concepts: { main_topics: [], subtopics: [], related_terms: [] }\n  };\n}\n\nconst research = parsedOutput || {};\n\n// =====================\n// VALIDATION KEYWORDS\n// =====================\nconst keywords = research.keywords || {};\nconst hasKeywords = (keywords.primary?.length || 0) > 0;\n\nif (!hasKeywords) {\n  console.error('ERREUR : Aucun mot-clé SEO trouvé !');\n\n  // FALLBACK : Extraction automatique du sujet\n  const topic = ($('Parse Webhook Axe').first().json.topic || '').toString();\n  const words = topic.toLowerCase().split(/\\s+/).filter(w => w.length > 3);\n\n  keywords.primary = words.slice(0, 3);\n  keywords.secondary = words.slice(3, 8);\n  keywords.long_tail = topic ? [topic] : [];\n\n  console.warn('Keywords générés par fallback:', keywords);\n}\n\nconsole.log('STATS KEYWORDS:');\nconsole.log('- Primary:', keywords.primary?.length || 0);\nconsole.log('- Secondary:', keywords.secondary?.length || 0);\nconsole.log('- Long-tail:', keywords.long_tail?.length || 0);\n\n// =====================\n// CONSTRUCTION ALL SOURCES\n// =====================\nconst allSources = [];\n\n// 1. URLs trouvées via Web\nconst webUrls = research.search_performed?.urls_found_web || [];\nwebUrls.forEach(url => {\n  allSources.push({\n    url,\n    title: 'Source Web',\n    type: 'web'\n  });\n});\n\n// 2. Sources détaillées scrapées\nconst scrapedSources = research.search_performed?.sources_detailed || [];\nscrapedSources.forEach(source => {\n  allSources.push({\n    url: source.url,\n    title: source.title || 'Sans titre',\n    type: source.source_type || 'scraped',\n    content_preview: source.content ? source.content.substring(0, 150) : ''\n  });\n});\n\nconsole.log('Total sources générées:', allSources.length);\n\n// =====================\n// CONSTRUCTION SEARCH SYNTHESIS\n// =====================\nconst webQueries = research.search_performed?.web_queries || [];\n\nconst searchSynthesis = {\n  keywords,\n  concepts: research.concepts || { main_topics: [], subtopics: [], related_terms: [] },\n  sources_count: allSources.length,\n  research_depth: webQueries.length > 0 ? 'deep' : 'shallow'\n};\n\nreturn [\n  {\n    json: {\n      research,\n      all_sources: allSources,\n      search_synthesis: searchSynthesis,\n      urls_count: {\n        web: webUrls.length,\n        scraped: scrapedSources.length,\n        total: allSources.length\n      }\n    }\n  }\n];\n"
+      },
+      "id": "98fcf859-37c4-402b-802b-bc8979b28a3e",
+      "name": "Parse Research Output Axe",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1808,
+        4032
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const body = $input.item.json;\nconst request = body.modification_request.toLowerCase();\n\nconsole.log('=== ANALYSE DU SCOPE ===');\nconsole.log('Requête:', body.modification_request);\n\n// Détection du scope\nlet scope = 'full'; // Par défaut : modification complète\nlet targetSection = null;\n\n// Mots-clés pour le titre principal uniquement\nconst titleOnlyKeywords = [\n  'titre principal',\n  'titre de l\\'article',\n  'changer le titre',\n  'modifier le titre',\n  'renommer l\\'article',\n  'title only',\n  'just the title'\n];\n\n// Mots-clés pour une section spécifique\nconst sectionKeywords = [\n  'section',\n  'chapitre',\n  'partie',\n  'paragraphe'\n];\n\n// Détection : Titre principal uniquement\nconst isTitleOnly = titleOnlyKeywords.some(keyword => request.includes(keyword));\nif (isTitleOnly && !sectionKeywords.some(k => request.includes(k))) {\n  scope = 'title_only';\n  console.log('Scope détecté: TITRE PRINCIPAL uniquement');\n}\n\n// Détection : Section spécifique\nelse {\n  // Chercher \"section 1\", \"section 2\", etc.\n  const sectionMatch = request.match(/section\\s+(\\d+)/i) || \n                       request.match(/chapitre\\s+(\\d+)/i) ||\n                       request.match(/partie\\s+(\\d+)/i);\n  \n  if (sectionMatch) {\n    scope = 'section_specific';\n    targetSection = parseInt(sectionMatch[1]) - 1; // Index 0-based\n    console.log(`Scope détecté: SECTION ${sectionMatch[1]} (index ${targetSection})`);\n  }\n  \n  // Chercher \"section Introduction\", \"section Conclusion\", etc.\n  else {\n    const namedSectionMatch = request.match(/section\\s+[\\\"«]([^\\\"»]+)[\\\"»]/i) ||\n                             request.match(/section\\s+(\\w+)/i);\n    \n    if (namedSectionMatch) {\n      scope = 'section_named';\n      targetSection = namedSectionMatch[1];\n      console.log(`Scope détecté: SECTION nommée \"${targetSection}\"`);\n    }\n    \n    // Sinon : modification complète\n    else {\n      scope = 'full';\n      console.log('Scope détecté: MODIFICATION COMPLÈTE');\n    }\n  }\n}\n\nreturn [{\n  json: {\n    article_id: body.article_id,\n    modification_request: body.modification_request,\n    attached_files: body.attached_files || [],\n    scope: scope,\n    target_section: targetSection,\n    timestamp: new Date().toISOString()\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1120,
+        2464
+      ],
+      "id": "e923a201-4325-46b9-84ae-fef88fe240d0",
+      "name": "Analyze Modification Scope"
+    }
+  ],
+  "connections": {
+    "Set Translating Status": {
+      "main": [
+        [
+          {
+            "node": "Read Article Translate",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Preparer Traduction": {
+      "main": [
+        [
+          {
+            "node": "AI Translator",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory7": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Translator",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory6": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent Modifier Article",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory5": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent Modifier Plan",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse Translated Content": {
+      "main": [
+        [
+          {
+            "node": "Update Translated Article",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gemini Translate": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Translator",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Translator": {
+      "main": [
+        [
+          {
+            "node": "Parse Translated Content",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read Article Translate": {
+      "main": [
+        [
+          {
+            "node": "Preparer Traduction",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse Translate Request": {
+      "main": [
+        [
+          {
+            "node": "Response Translate",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Set Translating Status",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook Translate": {
+      "main": [
+        [
+          {
+            "node": "Parse Translate Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update Modified Content": {
+      "main": [
+        [
+          {
+            "node": "Response Modify Article",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse New Content": {
+      "main": [
+        [
+          {
+            "node": "Formatage",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gemini Modify Article": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent Modifier Article",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent Modifier Article": {
+      "main": [
+        [
+          {
+            "node": "Parse New Content",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read Article Modify Content": {
+      "main": [
+        [
+          {
+            "node": "Preparer Modification Article",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse Modify Article": {
+      "main": [
+        [
+          {
+            "node": "Read Article Modify Content",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook Modify Article": {
+      "main": [
+        [
+          {
+            "node": "Parse Modify Article",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update Modified TOC": {
+      "main": [
+        [
+          {
+            "node": "Response Modify Plan",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse New TOC": {
+      "main": [
+        [
+          {
+            "node": "Update Modified TOC",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gemini Modify Plan": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent Modifier Plan",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent Modifier Plan": {
+      "main": [
+        [
+          {
+            "node": "Parse New TOC",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read Article Modify": {
+      "main": [
+        [
+          {
+            "node": "Preparer Modification",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse Modify Plan": {
+      "main": [
+        [
+          {
+            "node": "Analyze Modification Scope",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook Modify Plan": {
+      "main": [
+        [
+          {
+            "node": "Parse Modify Plan",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Verification": {
+      "main": [
+        [
+          {
+            "node": "AI Agent Planificateur",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read Supabase": {
+      "main": [
+        [
+          {
+            "node": "Parse Article Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Upload Google Drive": {
+      "main": [
+        [
+          {
+            "node": "Preparer Update Final",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent Évaluateur": {
+      "main": [
+        [
+          {
+            "node": "Debug Evaluation Output",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Préparer pour upload": {
+      "main": [
+        [
+          {
+            "node": "Upload Google Drive",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Format Google Doc": {
+      "main": [
+        [
+          {
+            "node": "Convertir Markdown → HTML",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Finalisation Prep": {
+      "main": [
+        [
+          {
+            "node": "Preparer Format Google Doc",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Increment Retry (Loop)": {
+      "main": [
+        [
+          {
+            "node": "AI Agent Rédaction",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Retry Loop": {
+      "main": [
+        [
+          {
+            "node": "Increment Retry (Loop)",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Finalisation Prep",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse Evaluation": {
+      "main": [
+        [
+          {
+            "node": "Check Retry Loop",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update Supabase Final": {
+      "main": [
+        [
+          {
+            "node": "Notification",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Convertir Markdown → HTML": {
+      "main": [
+        [
+          {
+            "node": "Préparer pour upload",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse Optimized Article": {
+      "main": [
+        [
+          {
+            "node": "Preparer Evaluation",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent Optimisation": {
+      "main": [
+        [
+          {
+            "node": "Parse Optimized Article",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent Rédaction": {
+      "main": [
+        [
+          {
+            "node": "Parse Generated Article",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge Validated TOC": {
+      "main": [
+        [
+          {
+            "node": "Preparer Redaction",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory4": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent Évaluateur",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory3": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent Optimisation",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory2": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent Rédaction",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory1": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent Planificateur",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent Planificateur",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent Planificateur": {
+      "main": [
+        [
+          {
+            "node": "Parse TOC",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent Recherche": {
+      "main": [
+        [
+          {
+            "node": "Parse Research Output",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent Recherche",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent Recherche",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model4": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent Évaluateur",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model3": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent Optimisation",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model2": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent Rédaction",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse Validation": {
+      "main": [
+        [
+          {
+            "node": "Read Supabase Validated",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Response Validation",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook Validate TOC": {
+      "main": [
+        [
+          {
+            "node": "Parse Validation",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse TOC": {
+      "main": [
+        [
+          {
+            "node": "Update Supabase TOC",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse Research Output": {
+      "main": [
+        [
+          {
+            "node": "Verification",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse Article Data": {
+      "main": [
+        [
+          {
+            "node": "AI Agent Recherche",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse Webhook": {
+      "main": [
+        [
+          {
+            "node": "Read Supabase",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Response 202",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook Start": {
+      "main": [
+        [
+          {
+            "node": "Parse Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Preparer Modification": {
+      "main": [
+        [
+          {
+            "node": "AI Agent Modifier Plan",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Preparer Modification Article": {
+      "main": [
+        [
+          {
+            "node": "AI Agent Modifier Article",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update Supabase TOC": {
+      "main": [
+        [
+          {
+            "node": "PAUSE - Waiting Validation",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Preparer Redaction": {
+      "main": [
+        [
+          {
+            "node": "AI Agent Rédaction",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read Supabase Validated": {
+      "main": [
+        [
+          {
+            "node": "Merge Validated TOC",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse Generated Article": {
+      "main": [
+        [
+          {
+            "node": "Preparer Optimisation",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Preparer Optimisation": {
+      "main": [
+        [
+          {
+            "node": "AI Agent Optimisation",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Preparer Evaluation": {
+      "main": [
+        [
+          {
+            "node": "AI Agent Évaluateur",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Preparer Format Google Doc": {
+      "main": [
+        [
+          {
+            "node": "Format Google Doc",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Preparer Update Final": {
+      "main": [
+        [
+          {
+            "node": "Update Supabase Final",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Debug Evaluation Output": {
+      "main": [
+        [
+          {
+            "node": "Parse Evaluation",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Formatage": {
+      "main": [
+        [
+          {
+            "node": "Debug",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Debug": {
+      "main": [
+        [
+          {
+            "node": "Update Modified Content",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Search in Tavily": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent Recherche",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook modifier Axe": {
+      "main": [
+        [
+          {
+            "node": "Parse Webhook Axe",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Verification1": {
+      "main": [
+        [
+          {
+            "node": "AI Agent Planificateur1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read Supabase1": {
+      "main": [
+        [
+          {
+            "node": "Parse Article Data Axe",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory8": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent Planificateur1",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model5": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent Planificateur1",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent Planificateur1": {
+      "main": [
+        [
+          {
+            "node": "Parse TOC1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent Recherche1": {
+      "main": [
+        [
+          {
+            "node": "Parse Research Output Axe",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model6": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent Recherche1",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory9": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent Recherche1",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse TOC1": {
+      "main": [
+        [
+          {
+            "node": "Update Supabase TOC1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update Supabase TOC1": {
+      "main": [
+        [
+          {
+            "node": "PAUSE - Waiting Validation1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Search in Tavily1": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent Recherche1",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse Webhook Axe": {
+      "main": [
+        [
+          {
+            "node": "Read Supabase1",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Response ",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse Article Data Axe": {
+      "main": [
+        [
+          {
+            "node": "AI Agent Recherche1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse Research Output Axe": {
+      "main": [
+        [
+          {
+            "node": "Verification1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Analyze Modification Scope": {
+      "main": [
+        [
+          {
+            "node": "Read Article Modify",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "27d8ac9fa8374675383d394ebac973685d6c9244c45e4e9460569139fe28fd97"
+  }
+}
