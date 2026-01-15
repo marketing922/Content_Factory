@@ -50,7 +50,7 @@ Le système repose sur une architecture moderne séparant l'interface utilisateu
     - Visualisation du contenu généré phrase par phrase (streaming simulé via Realtime DB events).
     - Édition riche (gras, titres, listes) via Tiptap.
     - Nettoyage automatique du HTML (suppression des métadonnées superflues).
-4.  **Traduction** : Traduction automatique multilingue (FR, EN, ES, DE, IT, PT) via workflow dédié.
+4.  **Traduction** : Traduction automatique multilingue (FR, EN, CN) via workflow dédié.
 5.  **Export** : Téléchargement en un clic aux formats **DOCX** et **PDF**.
 
 ---
