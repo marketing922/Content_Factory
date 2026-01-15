@@ -491,7 +491,7 @@ export default function ArticlePage() {
                                     />
                                 </div>
                                 <p className="text-[10px] uppercase tracking-widest text-muted-foreground font-bold opacity-50">
-                                    Temps estimé : ~1m30s
+                                    Temps estimé : ~2 minutes 
                                 </p>
                             </motion.div>
                         </motion.div>

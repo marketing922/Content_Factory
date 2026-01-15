@@ -5,6 +5,7 @@ import { motion } from "framer-motion"
 import { ArrowRight, Zap, PenTool, BarChart3, Globe } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import Image from "next/image"
+import { ThemeToggle } from "@/components/theme-toggle"
 
 export default function Home() {
   return (
@@ -17,7 +18,7 @@ export default function Home() {
       </div>
 
       {/* Navigation */}
-      <nav className="p-6 flex justify-between items-center max-w-7xl mx-auto w-full z-10">
+      <nav className="p-6 flex justify-between items-center max-w-7xl mx-auto w-full z-50">
         <motion.div 
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
@@ -34,8 +35,10 @@ export default function Home() {
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.5, delay: 0.1 }}
+            className="flex items-center gap-4"
         >
-            <Link href="/dashboard">
+            <ThemeToggle />
+            <Link href="/library">
                 <Button variant="ghost" className="hover:bg-primary/10 hover:text-primary">
                     Accéder au Dashboard
                 </Button>
@@ -56,7 +59,7 @@ export default function Home() {
                   <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
                   <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
                 </span>
-                Opérationnel & Connecté à n8n
+                Opérationnel & Connecté
             </div>
 
             <h1 className="text-5xl md:text-7xl font-extrabold tracking-tight text-balance leading-tight">
@@ -76,7 +79,7 @@ export default function Home() {
                 </Link>
                 <Link href="/library">
                     <Button size="lg" variant="outline" className="h-14 px-8 text-lg rounded-full hover:bg-muted/50 transition-all duration-300">
-                        Voir mes Articles
+                        Voir les Articles
                     </Button>
                 </Link>
             </div>
