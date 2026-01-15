@@ -1,14 +1,13 @@
 
 const { Client } = require('pg');
 
-// require('dotenv').config({ path: '.env.local' });
+require('dotenv').config({ path: '.env.local' });
 
-// Hardcoded for migration only
-const connectionString = "postgresql://postgres:Calebasse#2026@db.jvnffxpysxqkutwvzhhm.supabase.co:5432/postgres";
+const connectionString = process.env.SUPABASE_DB_URL;
 
 if (!connectionString) {
-  console.error('Error: SUPABASE_DB_URL is not defined in .env.local');
-  process.exit(1);
+  console.warn('Warning: SUPABASE_DB_URL is not defined. Skipping DB setup.');
+  process.exit(0); // Exit gracefully during build to avoid failure if variable is missing
 }
 
 const client = new Client({
