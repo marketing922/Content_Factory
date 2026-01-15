@@ -1,0 +1,28 @@
+const input = $input.item.json;
+const body = input.body || input;  // Support 2 formats
+
+console.log('=== DEBUG WEBHOOK ===');
+console.log('Input:', JSON.stringify(input, null, 2));
+
+const article_id = body.article_id;
+
+if (!article_id) {
+  throw new Error('❌ article_id is REQUIRED. Received: ' + JSON.stringify(input));
+}
+
+// Validation UUID
+const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+if (!uuidRegex.test(article_id)) {
+  throw new Error('❌ article_id must be a valid UUID. Got: ' + article_id);
+}
+
+console.log('✅ Valid article_id:', article_id);
+
+return {
+  json: {
+    article_id: article_id,
+    user_id: body.user_id || null,
+    retry_count: 0,
+    timestamp: new Date().toISOString()
+  }
+};
