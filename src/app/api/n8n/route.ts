@@ -77,7 +77,10 @@ export async function POST(request: Request) {
   } catch (error) {
     console.error('[N8N Proxy] Internal Error:', error);
     return NextResponse.json(
-      { message: 'Internal Server Error' },
+      { 
+        message: 'Internal Server Error', 
+        details: error instanceof Error ? error.message : String(error) 
+      },
       { status: 500 }
     );
   }
