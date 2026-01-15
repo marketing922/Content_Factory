@@ -78,9 +78,9 @@ Créez un fichier `.env.local` à la racine et renseignez les clés suivantes :
 
 ```bash
 # Supabase
-NEXT_PUBLIC_SUPABASE_URL=https://votre-projet.supabase.co
-NEXT_PUBLIC_SUPABASE_ANON_KEY=votre-cle-anon-publique
-SUPABASE_SERVICE_ROLE_KEY=votre-cle-service-role (optionnel)
+NEXT_PUBLIC_SUPABASE_URL=https://projet.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=cle-anon-publique
+SUPABASE_SERVICE_ROLE_KEY=cle-service-role 
 
 # N8N Webhooks (URLs de vos workflows)
 N8N_WEBHOOK_START_URL=https://n8n.instance.com/webhook/...
