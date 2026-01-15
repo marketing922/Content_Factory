@@ -23,9 +23,9 @@ export const metadata: Metadata = {
   title: "Content Factory by Calebasse",
   description: "AI-assisted content generation for Calebasse Laboratoire",
   icons: {
-    icon: '/images/logo512.png',
-    shortcut: '/images/logo512.png',
-    apple: '/images/logo512.png',
+    icon: '/favicon.png',
+    shortcut: '/favicon.png',
+    apple: '/favicon.png',
   },
 };
 
