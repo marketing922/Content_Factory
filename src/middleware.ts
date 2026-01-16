@@ -1,7 +1,7 @@
 import { createServerClient, type CookieOptions } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
 
-export async function proxy(request: NextRequest) {
+export async function middleware(request: NextRequest) {
   let response = NextResponse.next({
     request: {
       headers: request.headers,
@@ -58,20 +58,25 @@ export async function proxy(request: NextRequest) {
   // Refresh session if expired - required for Server Components
   const { data: { user } } = await supabase.auth.getUser()
 
+  const { pathname } = request.nextUrl
+
   // Protected Routes Logic
-  const protectedPaths = ['/dashboard', '/library', '/article']
-  const isProtected = protectedPaths.some(path => request.nextUrl.pathname.startsWith(path))
+  const protectedPaths = ['/dashboard', '/library', '/article', '/create', '/settings', '/faq']
+  const isProtected = protectedPaths.some(path => pathname.startsWith(path))
 
   // Auth Routes Logic (Login/Signup)
-  const isAuthRoute = request.nextUrl.pathname.startsWith('/login') || request.nextUrl.pathname.startsWith('/signup')
+  const isAuthRoute = pathname.startsWith('/login') || pathname.startsWith('/signup')
 
+  // Landing Page Logic
+  const isLandingPage = pathname === '/'
+
+  // Redirect unauthenticated users away from protected routes to landing page
   if (isProtected && !user) {
-    // Redirect unauthenticated users to login
-    return NextResponse.redirect(new URL('/login', request.url))
+    return NextResponse.redirect(new URL('/', request.url))
   }
 
-  if (isAuthRoute && user) {
-    // Redirect authenticated users away from login
+  // Redirect authenticated users away from auth routes or landing page to dashboard
+  if (user && (isAuthRoute || isLandingPage)) {
     return NextResponse.redirect(new URL('/dashboard', request.url))
   }
 
@@ -85,9 +90,9 @@ export const config = {
      * - _next/static (static files)
      * - _next/image (image optimization files)
      * - favicon.ico (favicon file)
-     * - api/n8n (allow public access to webhooks if needed, though they might be protected differently)
-     * Feel free to modify this pattern to include more paths.
+     * - api/n8n (allow public access to webhooks if needed)
+     * - .png, .jpg, .jpeg, .gif, .svg (images)
      */
-    '/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
+    '/((?!_next/static|_next/image|favicon.ico|api/n8n|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
   ],
 }

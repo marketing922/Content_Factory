@@ -84,7 +84,7 @@ export default function SignupPage() {
           {/* Header */}
           <div className="text-center mb-10">
             <h1 className="text-3xl font-bold tracking-tight mb-2 font-heading text-foreground">Créer un compte</h1>
-            <p className="text-muted-foreground text-sm">Rejoignez Content Factory dès aujourd'hui</p>
+            <p className="text-muted-foreground text-sm">Rejoignez Content Factory </p>
           </div>
           
            {success ? (

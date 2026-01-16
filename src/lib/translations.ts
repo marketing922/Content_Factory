@@ -145,7 +145,7 @@ export const translations = {
             },
             {
               q: "Quels modèles d'IA alimentent le système ?",
-              a: "Nous exploitons la puissance de Google Gemini (2.5 Pro, Flash et Flash Lite) via Vertex AI. Ces modèles sont choisis pour leur fenêtre contextuelle massive et leur capacité de raisonnement supérieure, garantissant des articles de plus de 2000 mots avec une cohérence parfaite."
+              a: "Nous exploitons la puissance de Google Gemini (2.5 Pro, Flash et Flash Lite) Google Gemini LLM. Ces modèles sont choisis pour leur fenêtre contextuelle massive et leur capacité de raisonnement supérieure, garantissant des articles de plus de 2000 mots avec une cohérence parfaite."
             },
             {
               q: "Comment est assurée la conformité médicale (TCM) ?",

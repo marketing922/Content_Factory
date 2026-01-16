@@ -91,7 +91,7 @@ export default function LoginPage() {
           {/* Header */}
           <div className="text-center mb-10">
             <h1 className="text-3xl font-bold tracking-tight mb-2 font-heading text-foreground">Bon retour !</h1>
-            <p className="text-muted-foreground text-sm">Entrez votre email @calebasse.com pour continuer</p>
+            <p className="text-muted-foreground text-sm">Entrez votre email pour continuer</p>
           </div>
 
           {/* Login Form */}
