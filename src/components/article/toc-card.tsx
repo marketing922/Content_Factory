@@ -143,7 +143,7 @@ export function TOCCard({ toc, planOptions, onSelectAxis, onModificationRequest,
                                         setSelectedTitle(title)
                                         // Update the assistant input with this title choice
                                         setModRequest(prev => {
-                                            const prefix = t.article.parameters?.language === 'zh' ? "使用此标题：" : t.article.parameters?.language === 'en' ? "Use this title: " : "Utilise ce titre : ";
+                                            const prefix = t.article.toc.useThisTitle;
                                             // Simple check to avoid duplicating if already there or replacing main intent
                                             // We append or set. Let's just append neatly.
                                             return prev ? `${prev}\n${prefix}"${title}"` : `${prefix}"${title}"`;

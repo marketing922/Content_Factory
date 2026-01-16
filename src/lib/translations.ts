@@ -335,6 +335,7 @@ export const translations = {
         selectedBadge: "Sélectionné",
         fileSizeError: "Fichier trop volumineux (max 5MB)",
         regenInfo: "Demande de régénération envoyée...",
+        useThisTitle: "Utilise ce titre : ",
       }
     }
   },
@@ -671,6 +672,7 @@ export const translations = {
         selectedBadge: "Selected",
         fileSizeError: "File too large (max 5MB)",
         regenInfo: "Regeneration request sent...",
+        useThisTitle: "Use this title: ",
       }
     }
   },
@@ -1007,7 +1009,8 @@ export const translations = {
           selectedBadge: "已选择",
           fileSizeError: "文件太大（最大 5MB）",
           regenInfo: "重生成请求已发送...",
+          useThisTitle: "使用此标题：",
+        }
       }
     }
-  }
 };
