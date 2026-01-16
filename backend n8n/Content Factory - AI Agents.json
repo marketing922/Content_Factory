@@ -183,7 +183,6 @@
     },
     {
       "parameters": {
-        "modelName": "models/gemini-2.5-flash-lite",
         "options": {}
       },
       "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
@@ -204,9 +203,9 @@
     {
       "parameters": {
         "promptType": "define",
-        "text": "=Tu es un traducteur professionnel.\n\nRÈGLES ABSOLUES :\n1. Tu traduis TOUT le contenu\n2. Tu CONSERVES le format Markdown (pas HTML)\n3. Tu réponds UNIQUEMENT avec un JSON valide\n4. Pas de texte avant ou après le JSON\n```\n\n**Dans \"AI Translator\", User Message** :\n```\nTraduis TOUT en {{ $json.target_language === 'fr' ? 'français' : $json.target_language === 'en' ? 'anglais' : $json.target_language === 'zh' ? 'chinois' : $json.target_language }}.\n\nSUJET :\n{{ $json.topic }}\n\nPLAN (TOC) - Traduis les titres, conserve les IDs :\n{{ JSON.stringify($json.table_of_contents) }}\n\nOPTIONS PLAN - Traduis le contenu, garde les clés \"titles\" et \"axes\" :\n{{ JSON.stringify($json.plan_options) }}\n\nRECHERCHE - Traduis keywords et concepts :\n{{ JSON.stringify($json.search_synthesis) }}\n\nÉVALUATION - Traduis critères et explications :\n{{ JSON.stringify($json.evaluation_details) }}\n\nCONTENU (MARKDOWN) - Traduis en gardant le Markdown :\n{{ $json.content }}\n\n⚠️ IMPORTANT : Le contenu est en Markdown. Tu dois traduire le texte mais GARDER le formatage Markdown (#, ##, **, -, etc.).\n\nRetourne ce JSON :\n{\n  \"translated_topic\": \"...\",\n  \"translated_toc\": {...},\n  \"translated_plan_options\": {...},\n  \"translated_search_synthesis\": {...},\n  \"translated_evaluation_details\": {...},\n  \"translated_content\": \"# Titre traduit\\n\\n## Section...\\n\\nTexte traduit...\"\n}",
+        "text": "=Traduis TOUT en {{ $json.target_language === 'fr' ? 'français' : $json.target_language === 'en' ? 'anglais' : $json.target_language === 'zh' ? 'chinois' : $json.target_language }}.\n\nRÈGLES :\n1. Traduis le texte mais GARDE le formatage Markdown (#, ##, **, -, etc.)\n2. Pour les clés JSON comme \"titles\" et \"axes\", garde les noms en anglais\n3. Traduis uniquement le CONTENU des tableaux et objets\n4. Réponds avec UN SEUL JSON contenant toutes les traductions\n\nDONNÉES À TRADUIRE :\n\nSUJET :\n{{ $json.topic }}\n\nPLAN (TOC) - Traduis les titres, garde les IDs :\n{{ JSON.stringify($json.table_of_contents) }}\n\nOPTIONS PLAN - Traduis le contenu, garde \"titles\" et \"axes\" :\n{{ JSON.stringify($json.plan_options) }}\n\nRECHERCHE - Traduis keywords et concepts :\n{{ JSON.stringify($json.search_synthesis) }}\n\nÉVALUATION - Traduis critères et explications :\n{{ JSON.stringify($json.evaluation_details) }}\n\nCONTENU (MARKDOWN) :\n{{ $json.content }}\n\nRETOURNE CE JSON (commence directement par { et finis par }) :\n{\n  \"translated_topic\": \"...\",\n  \"translated_toc\": {...},\n  \"translated_plan_options\": {...},\n  \"translated_search_synthesis\": {...},\n  \"translated_evaluation_details\": {...},\n  \"translated_content\": \"# Titre...\\n\\n...\"\n}",
         "options": {
-          "systemMessage": "Tu es un traducteur technique qui répond exclusivement au format JSON pour être parsé par un programme.\n"
+          "systemMessage": "Tu es un traducteur professionnel.\n\nTu réponds UNIQUEMENT avec un JSON valide. Aucun texte avant ou après le JSON."
         }
       },
       "id": "787f0432-828b-4e5f-b592-0259d55d7150",
@@ -1337,8 +1336,8 @@
       },
       "type": "n8n-nodes-base.stickyNote",
       "position": [
-        2448,
-        7264
+        2464,
+        7104
       ],
       "typeVersion": 1,
       "id": "28f1179e-e33a-4107-a780-81bc67c74e01",
@@ -1977,11 +1976,58 @@
       "type": "n8n-nodes-base.merge",
       "typeVersion": 3.2,
       "position": [
-        4528,
-        7632
+        4496,
+        7328
       ],
       "id": "15fdf4be-56f1-428f-8015-0dabf1d9549f",
       "name": "Merge"
+    },
+    {
+      "parameters": {
+        "mode": "retrieve-as-tool",
+        "toolDescription": "Utilise cette outil pour consulter le magasin d'article déjà rédigé et t'en inspirer sur la forme et le fond.",
+        "pineconeIndex": {
+          "__rl": true,
+          "value": "content-factory",
+          "mode": "list",
+          "cachedResultName": "content-factory"
+        },
+        "topK": 10,
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.vectorStorePinecone",
+      "typeVersion": 1.3,
+      "position": [
+        3776,
+        3648
+      ],
+      "id": "78f5fa18-caa8-4c8d-8265-023e4b216268",
+      "name": "Pinecone Vector Store",
+      "credentials": {
+        "pineconeApi": {
+          "id": "EIg8sqwXH2dtPVCD",
+          "name": "PineconeApi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "modelName": "models/embedding-001"
+      },
+      "type": "@n8n/n8n-nodes-langchain.embeddingsGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        3792,
+        3872
+      ],
+      "id": "758ece31-9d44-44ca-9a90-777400336f5a",
+      "name": "Embeddings Google Gemini",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "l6LzqmUVQJAC6E6r",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
     }
   ],
   "connections": {
@@ -3013,6 +3059,28 @@
           {
             "node": "Parse Translated Content",
             "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Pinecone Vector Store": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent Rédaction",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Embeddings Google Gemini": {
+      "ai_embedding": [
+        [
+          {
+            "node": "Pinecone Vector Store",
+            "type": "ai_embedding",
             "index": 0
           }
         ]
