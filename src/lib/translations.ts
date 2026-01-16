@@ -145,7 +145,7 @@ export const translations = {
             },
             {
               q: "Quels modèles d'IA alimentent le système ?",
-              a: "Nous exploitons la puissance de Google Gemini (2.5 Pro, Flash et Flash Lite) Google Gemini LLM. Ces modèles sont choisis pour leur fenêtre contextuelle massive et leur capacité de raisonnement supérieure, garantissant des articles de plus de 2000 mots avec une cohérence parfaite."
+              a: "Nous exploitons la puissance de Google Gemini (2.5 Pro, Flash et Flash Lite) via Google Gemini LLM. Ces modèles sont choisis pour leur fenêtre contextuelle massive et leur capacité de raisonnement supérieure, garantissant des articles de plus de 2000 mots avec une cohérence parfaite."
             },
             {
               q: "Comment est assurée la conformité médicale (TCM) ?",
@@ -221,7 +221,7 @@ export const translations = {
       desc: "Définissez votre sujet et laissez l'IA rédiger du contenu de qualité pour vous.",
       settingsTitle: "Paramètres de rédaction",
       promptPlaceholder: "Commencez à décrire votre article ici... (Sujet, angle, mots-clés, structure souhaitée)",
-      markdown: "Markdown supporté",
+      markdown: "Markdown et JSON supportés",
       charCount: "caractères",
       docsTitle: "Documents de référence (Optionnel)",
       docsDesc: "Ajouter des fichiers contextuels",
@@ -241,8 +241,8 @@ export const translations = {
       status: {
         loading: "Chargement...",
         researching: "Recherches en cours...",
-        generatingPlan: "L'IA restructure le plan...",
-        writing: "L'IA rédige votre article...",
+        generatingPlan: "Restructuration du plan...",
+        writing: "Rédaction de votre article...",
         translating: "Traduction intelligente...",
         finalizing: "Article finalisé !",
         ready: "Structure du plan prête !",
@@ -299,7 +299,7 @@ export const translations = {
         criterion: "Critère",
       },
       research: {
-        title: "Laboratoire d'Analyse IA",
+        title: "Laboratoire d'Analyse",
         desc: "Synthèse exhaustive des sources et orientations stratégiques",
         synthesisTitle: "Synthèse Labo",
         serpTitle: "Recherches effectuées sur le Web",
