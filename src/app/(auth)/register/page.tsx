@@ -66,7 +66,7 @@ export default function RegisterPage() {
     setIsLoading(true)
     // Simulate API call
     setTimeout(() => {
-      console.log(values)
+
       setIsLoading(false)
       router.push("/dashboard")
     }, 2000)

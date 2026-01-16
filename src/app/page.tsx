@@ -71,7 +71,7 @@ export default function Home() {
             </p>
 
             <div className="pt-8 flex flex-col sm:flex-row gap-4 justify-center items-center">
-                <Link href="/create">
+                <Link href="/login">
                     <Button size="lg" className="h-14 px-8 text-lg rounded-full shadow-lg shadow-primary/25 hover:scale-105 transition-transform duration-300">
                         <Zap className="mr-2 h-5 w-5 fill-current" />
                         Créer un Article

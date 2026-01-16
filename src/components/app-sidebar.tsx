@@ -7,7 +7,11 @@ import {
   PenTool,
   Settings,
   User,
+  LogOut,
+  HelpCircle,
 } from "lucide-react"
+import { useProfile } from "@/hooks/use-profile"
+import { useTranslation } from "@/hooks/use-translation"
 
 import {
   Sidebar,
@@ -28,33 +32,45 @@ import { ThemeToggle } from "@/components/theme-toggle"
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const pathname = usePathname()
+  const { profile, fetchProfile, signOut } = useProfile()
+  const { t } = useTranslation()
+
+  React.useEffect(() => {
+    fetchProfile()
+  }, [fetchProfile])
+
+  const user = {
+    name: profile?.full_name || t.nav.admin,
+    email: profile?.email || "",
+    avatar: profile?.avatar_url || "",
+  }
 
   const data = {
-    user: {
-      name: "Admin",
-      email: "admin@calebasse.com",
-      avatar: "",
-    },
     navMain: [
       {
-        title: "Tableau de bord",
+        title: t.nav.dashboard,
         url: "/dashboard",
         icon: LayoutDashboard,
       },
       {
-        title: "Créer un article",
+        title: t.nav.factory,
         url: "/create",
         icon: PenTool,
       },
       {
-        title: "Bibliothèque",
+        title: t.nav.library,
         url: "/library",
         icon: BookOpen,
       },
       {
-        title: "Paramètres",
+        title: t.nav.settings,
         url: "/settings",
         icon: Settings,
+      },
+      {
+        title: t.nav.faq,
+        url: "/faq",
+        icon: HelpCircle,
       },
     ],
   }
@@ -74,7 +90,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       </SidebarHeader>
       <SidebarContent>
         <SidebarGroup>
-          <SidebarGroupLabel>Menu</SidebarGroupLabel>
+          <SidebarGroupLabel>{t.nav.menuLabel}</SidebarGroupLabel>
           <SidebarMenu>
             {data.navMain.map((item) => (
               <SidebarMenuItem key={item.title}>
@@ -99,12 +115,21 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                           <User className="size-4" />
                       </div>
                       <div className="grid flex-1 text-left text-sm leading-tight">
-                          <span className="truncate font-semibold">{data.user.name}</span>
-                          <span className="truncate text-xs">{data.user.email}</span>
+                          <span className="truncate font-semibold">{user.name}</span>
+                          <span className="truncate text-xs">{user.email}</span>
                       </div>
                   </SidebarMenuButton>
                   <ThemeToggle />
                 </div>
+            </SidebarMenuItem>
+            <SidebarMenuItem>
+                <SidebarMenuButton 
+                    className="text-red-500 hover:text-red-600 hover:bg-red-50"
+                    onClick={signOut}
+                >
+                    <LogOut className="mr-2 h-4 w-4" />
+                    <span>{t.nav.logout}</span>
+                </SidebarMenuButton>
             </SidebarMenuItem>
          </SidebarMenu>
       </SidebarFooter>

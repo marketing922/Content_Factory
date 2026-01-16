@@ -13,6 +13,7 @@ import {
     Loader2
 } from "lucide-react"
 import { supabase } from "@/lib/supabase"
+import { useTranslation } from "@/hooks/use-translation"
 
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -50,6 +51,7 @@ export default function LibraryPage() {
     const [searchTerm, setSearchTerm] = useState("")
     const [articles, setArticles] = useState<Article[]>([])
     const [loading, setLoading] = useState(true)
+    const { t } = useTranslation()
 
     useEffect(() => {
         const fetchArticles = async () => {
@@ -76,7 +78,7 @@ export default function LibraryPage() {
                     table: 'articles'
                 },
                 (payload) => {
-                    console.log("[DEBUG] Realtime Change in Library:", payload);
+
                     
                     if (payload.eventType === 'INSERT') {
                         setArticles(prev => [payload.new as Article, ...prev]);
@@ -99,7 +101,7 @@ export default function LibraryPage() {
     )
 
     const handleDelete = async (id: string) => {
-        if (!confirm("Voulez-vous vraiment supprimer cet article ?")) return
+        if (!confirm(t.library.actions.confirmDelete)) return
         
         const { error } = await supabase
             .from('articles')
@@ -115,15 +117,15 @@ export default function LibraryPage() {
         <div className="flex flex-col gap-6 p-6">
             <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
                 <div>
-                    <h1 className="text-3xl font-bold font-heading text-primary">Bibliothèque</h1>
-                    <p className="text-muted-foreground">Gérez vos contenus générés et publiés.</p>
+                    <h1 className="text-3xl font-bold font-heading text-primary">{t.library.title}</h1>
+                    <p className="text-muted-foreground">{t.library.desc}</p>
                 </div>
                 <div className="flex items-center gap-2 w-full md:w-auto">
                     <div className="relative flex-1 md:w-[300px]">
                         <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
                         <Input 
                             type="search" 
-                            placeholder="Rechercher..." 
+                            placeholder={t.library.searchPlaceholder} 
                             className="pl-8" 
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
@@ -147,19 +149,19 @@ export default function LibraryPage() {
                 </div>
             ) : filteredArticles.length === 0 ? (
                 <div className="text-center py-12 text-muted-foreground border border-dashed rounded-lg">
-                    Aucun article trouvé. Commencez par en générer un !
+                    {t.library.emptyState}
                 </div>
             ) : view === "list" ? (
                 <div className="bg-card rounded-md border">
                     <Table className="table-fixed w-full">
                         <TableHeader>
                             <TableRow>
-                                <TableHead className="w-[45%]">Titre</TableHead>
-                                <TableHead className="w-[10%]">Langue</TableHead>
-                                <TableHead className="w-[15%]">Statut</TableHead>
-                                <TableHead className="w-[10%]">Score</TableHead>
-                                <TableHead className="w-[10%]">Date</TableHead>
-                                <TableHead className="w-[10%] text-right">Actions</TableHead>
+                                <TableHead className="w-[45%]">{t.library.table.title}</TableHead>
+                                <TableHead className="w-[10%]">{t.library.table.lang}</TableHead>
+                                <TableHead className="w-[15%]">{t.library.table.status}</TableHead>
+                                <TableHead className="w-[10%]">{t.library.table.score}</TableHead>
+                                <TableHead className="w-[10%]">{t.library.table.date}</TableHead>
+                                <TableHead className="w-[10%] text-right">{t.library.table.actions}</TableHead>
                             </TableRow>
                         </TableHeader>
                         <TableBody>
@@ -200,13 +202,13 @@ export default function LibraryPage() {
                                                 </Button>
                                             </DropdownMenuTrigger>
                                             <DropdownMenuContent align="end">
-                                                <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                                                <DropdownMenuLabel>{t.library.table.actions}</DropdownMenuLabel>
                                                 <DropdownMenuItem asChild>
-                                                    <Link href={`/article/${article.id}`}>Ouvrir</Link>
+                                                    <Link href={`/article/${article.id}`}>{t.library.actions.open}</Link>
                                                 </DropdownMenuItem>
                                                 <DropdownMenuSeparator />
                                                 <DropdownMenuItem className="text-destructive" onClick={() => handleDelete(article.id)}>
-                                                    Supprimer
+                                                    {t.library.actions.delete}
                                                 </DropdownMenuItem>
                                             </DropdownMenuContent>
                                         </DropdownMenu>
@@ -245,7 +247,7 @@ export default function LibraryPage() {
                             <CardFooter>
                                 <Button className="w-full" variant="secondary" asChild>
                                     <Link href={`/article/${article.id}`}>
-                                        Voir l&apos;article <ArrowRight className="ml-2 h-4 w-4" />
+                                        {t.dashboard.recent.open} <ArrowRight className="ml-2 h-4 w-4" />
                                     </Link>
                                 </Button>
                             </CardFooter>
@@ -259,8 +261,9 @@ export default function LibraryPage() {
 }
 
 function StatusBadge({ status }: { status: string }) {
-    if (status === 'done' || status === 'published' || status === 'completed') return <Badge className="bg-green-600 hover:bg-green-700">Terminé</Badge>
-    if (status === 'waiting_validation') return <Badge variant="destructive">Validation requise</Badge>
-    if (['writing', 'processing', 'researching', 'generating', 'generating_plan', 'translating'].includes(status)) return <Badge variant="secondary" className="animate-pulse">En cours</Badge>
-    return <Badge variant="outline">Brouillon</Badge>
+    const { t } = useTranslation()
+    if (status === 'done' || status === 'published' || status === 'completed') return <Badge className="bg-green-600 hover:bg-green-700">{t.library.status.completed}</Badge>
+    if (status === 'waiting_validation') return <Badge variant="destructive">{t.library.status.waiting}</Badge>
+    if (['writing', 'processing', 'researching', 'generating', 'generating_plan', 'translating'].includes(status)) return <Badge variant="secondary" className="animate-pulse">{t.library.status.inProgress}</Badge>
+    return <Badge variant="outline">{t.library.status.draft}</Badge>
 }

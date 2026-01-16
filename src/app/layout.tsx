@@ -29,6 +29,8 @@ export const metadata: Metadata = {
   },
 };
 
+import { CookieConsent } from "@/components/cookie-consent";
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -36,26 +38,13 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="fr" suppressHydrationWarning>
-      <head>
-        <script
-          dangerouslySetInnerHTML={{
-            __html: `
-              (function() {
-                const theme = localStorage.getItem('theme') || 'dark';
-                if (theme === 'dark') {
-                  document.documentElement.classList.add('dark');
-                }
-              })();
-            `,
-          }}
-        />
-      </head>
       <body
         className={`${inter.variable} ${playfair.variable} ${jetbrainsMono.variable} antialiased font-sans`}
       >
         <ThemeProvider>
           {children}
           <Toaster />
+          <CookieConsent />
         </ThemeProvider>
       </body>
     </html>

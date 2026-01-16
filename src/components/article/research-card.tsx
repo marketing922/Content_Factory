@@ -4,12 +4,14 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Search, Hash, Lightbulb, Link2, Layout, Sparkles, BookOpen, ExternalLink, ShieldCheck, Zap } from "lucide-react"
+import { useTranslation } from "@/hooks/use-translation"
 
 interface ResearchCardProps {
     research: any;
 }
 
 export function ResearchCard({ research: rawResearch }: ResearchCardProps) {
+    const { t } = useTranslation()
     // 1. Initial Parsing logic
     let research: any = rawResearch;
     if (typeof research === 'string') {
@@ -19,7 +21,7 @@ export function ResearchCard({ research: rawResearch }: ResearchCardProps) {
             console.error("Failed to parse research synthesis:", e);
             return (
                 <div className="p-8 text-center border border-dashed rounded-2xl bg-muted/20">
-                    <p className="text-sm text-muted-foreground italic">Données de recherche corrompues ou illisibles.</p>
+                    <p className="text-sm text-muted-foreground italic">{t.article.research.corrupted}</p>
                 </div>
             )
         }
@@ -72,10 +74,10 @@ export function ResearchCard({ research: rawResearch }: ResearchCardProps) {
             <div className="px-1">
                 <h2 className="text-xl font-bold text-foreground flex items-center gap-2">
                     <Sparkles className="h-5 w-5 text-primary" />
-                    Laboratoire d&apos;Analyse IA
+                    {t.article.research.title}
                 </h2>
                 <p className="text-sm text-muted-foreground mt-1 font-medium italic opacity-70">
-                    Synthèse exhaustive des sources et orientations stratégiques
+                    {t.article.research.desc}
                 </p>
             </div>
 
@@ -83,7 +85,7 @@ export function ResearchCard({ research: rawResearch }: ResearchCardProps) {
             {research.sources_summary && (
                 <div className="space-y-4 pt-2">
                      <h4 className="text-[11px] font-bold uppercase tracking-widest text-muted-foreground flex items-center gap-2">
-                        <BookOpen className="h-3 w-3" /> Synthèse Labo
+                        <BookOpen className="h-3 w-3" /> {t.article.research.synthesisTitle}
                     </h4>
                     <div className="text-sm text-foreground/80 leading-relaxed bg-primary/5 p-6 rounded-2xl border border-primary/10 italic relative group">
                         <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
@@ -99,7 +101,7 @@ export function ResearchCard({ research: rawResearch }: ResearchCardProps) {
                 <div className="space-y-3">
                     <div className="flex items-center gap-2 px-1 text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
                         <Search className="h-3 w-3 text-primary" />
-                        Recherches effectuées sur le Web
+                        {t.article.research.serpTitle}
                     </div>
                     <div className="flex flex-wrap gap-2">
                         {ensureArray(searchPerformed.serpapi_queries).map((query: string, i: number) => (
@@ -120,7 +122,7 @@ export function ResearchCard({ research: rawResearch }: ResearchCardProps) {
                         {keyStatistics.length > 0 && (
                             <div className="space-y-4">
                                 <h4 className="text-[11px] font-bold uppercase tracking-widest text-muted-foreground flex items-center gap-2">
-                                    <Zap className="h-3 w-3 text-amber-500" /> Données & Chiffres clés
+                                    <Zap className="h-3 w-3 text-amber-500" /> {t.article.research.statsTitle}
                                 </h4>
                                 <div className="space-y-3">
                                     {keyStatistics.map((stat: string, i: number) => (
@@ -136,7 +138,7 @@ export function ResearchCard({ research: rawResearch }: ResearchCardProps) {
                         {importantPoints.length > 0 && (
                             <div className="space-y-4">
                                 <h4 className="text-[11px] font-bold uppercase tracking-widest text-muted-foreground flex items-center gap-2">
-                                    <Lightbulb className="h-3 w-3 text-blue-500" /> Points d&apos;attention
+                                    <Lightbulb className="h-3 w-3 text-blue-500" /> {t.article.research.pointsTitle}
                                 </h4>
                                 <div className="space-y-3">
                                     {importantPoints.map((p: string, i: number) => (
@@ -155,7 +157,7 @@ export function ResearchCard({ research: rawResearch }: ResearchCardProps) {
                         {uniqueAngles.length > 0 && (
                             <div className="space-y-4">
                                 <h4 className="text-[11px] font-bold uppercase tracking-widest text-muted-foreground flex items-center gap-2">
-                                    <ShieldCheck className="h-3 w-3 text-green-500" /> Angles de rédaction recommandés
+                                    <ShieldCheck className="h-3 w-3 text-green-500" /> {t.article.research.anglesTitle}
                                 </h4>
                                 <div className="space-y-3">
                                     {uniqueAngles.map((angle: string, i: number) => (
@@ -171,7 +173,7 @@ export function ResearchCard({ research: rawResearch }: ResearchCardProps) {
                         {commonQuestions.length > 0 && (
                             <div className="space-y-4">
                                 <h4 className="text-[11px] font-bold uppercase tracking-widest text-muted-foreground flex items-center gap-2">
-                                    <Search className="h-3 w-3 text-primary" /> Questions fréquentes (FAQ)
+                                    <Search className="h-3 w-3 text-primary" /> {t.article.research.faqTitle}
                                 </h4>
                                 <div className="space-y-3">
                                     {commonQuestions.map((q: string, i: number) => (
@@ -190,7 +192,7 @@ export function ResearchCard({ research: rawResearch }: ResearchCardProps) {
                         {seoKeywords.length > 0 && (
                             <div className="space-y-3">
                                 <h4 className="text-[11px] font-bold uppercase tracking-widest text-muted-foreground flex items-center gap-2">
-                                    <Hash className="h-3 w-3" /> Stratégie Sémantique & SEO
+                                    <Hash className="h-3 w-3" /> {t.article.research.seoTitle}
                                 </h4>
                                 <div className="flex flex-wrap gap-2">
                                     {seoKeywords.map((k: string, i: number) => (
@@ -205,7 +207,7 @@ export function ResearchCard({ research: rawResearch }: ResearchCardProps) {
                         {keyConcepts.length > 0 && (
                             <div className="space-y-3">
                                 <h4 className="text-[11px] font-bold uppercase tracking-widest text-muted-foreground flex items-center gap-2">
-                                    <Sparkles className="h-3 w-3 text-primary" /> Concepts majeurs
+                                    <Sparkles className="h-3 w-3 text-primary" /> {t.article.research.conceptsTitle}
                                 </h4>
                                 <div className="flex flex-wrap gap-2">
                                     {keyConcepts.map((c: string, i: number) => (
@@ -220,7 +222,7 @@ export function ResearchCard({ research: rawResearch }: ResearchCardProps) {
                         {relatedTerms.length > 0 && (
                             <div className="space-y-3 opacity-60">
                                 <h4 className="text-[11px] font-bold uppercase tracking-widest text-muted-foreground flex items-center gap-2">
-                                    <Hash className="h-3 w-3" /> Termes connexes
+                                    <Hash className="h-3 w-3" /> {t.article.research.relatedTitle}
                                 </h4>
                                 <div className="flex flex-wrap gap-2">
                                     {relatedTerms.map((t: string, i: number) => (
@@ -240,12 +242,12 @@ export function ResearchCard({ research: rawResearch }: ResearchCardProps) {
                 <div className="space-y-4 pt-8 border-t border-border/30">
                     <div className="flex items-center gap-2 px-1 text-sm font-semibold text-primary/80">
                         <Layout className="h-4 w-4" />
-                        Aperçu du Plan de Travail (TOC)
+                        {t.article.research.previewTitle}
                     </div>
                     <Card className="shadow-sm border-border/40 bg-card">
                         <CardHeader className="bg-muted/30 border-b border-border/20 py-3 px-4">
                             <CardTitle className="text-base font-bold">
-                                {toc.title || "Titre suggéré"}
+                                {toc.title || t.article.research.suggestedTitle}
                             </CardTitle>
                         </CardHeader>
                         <CardContent className="p-0">
@@ -279,7 +281,7 @@ export function ResearchCard({ research: rawResearch }: ResearchCardProps) {
                     <div className="space-y-3">
                         <div className="flex items-center gap-2 px-1 text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
                             <Sparkles className="h-3 w-3 text-primary" />
-                            Angles de Titrage
+                            {t.article.research.anglesTitle}
                         </div>
                         <div className="space-y-2">
                             {ensureArray(planOptions.titles).map((title: string, i: number) => (
@@ -292,7 +294,7 @@ export function ResearchCard({ research: rawResearch }: ResearchCardProps) {
                     <div className="space-y-3">
                         <div className="flex items-center gap-2 px-1 text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
                             <Zap className="h-3 w-3 text-amber-500" />
-                            Axes de Rédaction
+                            {t.article.research.pointsTitle}
                         </div>
                         <div className="space-y-2">
                             {ensureArray(planOptions.axes).map((axis: string, i: number) => (
@@ -311,7 +313,7 @@ export function ResearchCard({ research: rawResearch }: ResearchCardProps) {
                     <div className="flex items-center justify-between px-1">
                         <div className="flex items-center gap-2 text-sm font-semibold text-primary/80">
                             <BookOpen className="h-4 w-4" />
-                            Cartographie des Sources ({sources.length})
+                            {t.article.research.sourceMapTitle} ({sources.length})
                         </div>
                         <Badge variant="outline" className="text-[9px] h-5 opacity-60">Verified by Agent</Badge>
                     </div>

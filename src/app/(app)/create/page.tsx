@@ -10,6 +10,8 @@ import { useDropzone } from "react-dropzone"
 import { Button } from "@/components/ui/button"
 import { supabase } from "@/lib/supabase"
 import { useRouter } from "next/navigation"
+import { useProfile } from "@/hooks/use-profile"
+import { useTranslation } from "@/hooks/use-translation"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import {
@@ -40,6 +42,8 @@ const formSchema = z.object({
 })
 
 export default function CreateArticlePage() {
+  const { profile } = useProfile()
+  const { t } = useTranslation()
   const [isGenerating, setIsGenerating] = useState(false)
   const [uploadedFiles, setUploadedFiles] = useState<File[]>([])
 
@@ -64,13 +68,16 @@ export default function CreateArticlePage() {
   const router = useRouter()
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
-    setIsGenerating(true)
-    
     try {
+        if (!profile?.id) {
+            throw new Error(t.common.error)
+        }
+
         // 1. Save to Supabase
         const { data, error } = await supabase
             .from('articles')
             .insert({
+                user_id: profile.id,
                 topic: values.prompt,
                 parameters: {
                     language: values.language,
@@ -84,7 +91,7 @@ export default function CreateArticlePage() {
             .single()
 
         if (error) throw error
-        if (!data) throw new Error("No data returned")
+        if (!data) throw new Error(t.common.error)
 
         const articleId = data.id
 
@@ -114,8 +121,8 @@ export default function CreateArticlePage() {
   return (
     <div className="w-full pb-32 px-6 lg:px-10">
       <div className="mb-8 space-y-2 pt-6">
-        <h1 className="text-3xl font-bold font-heading text-foreground">Créer un nouvel article</h1>
-        <p className="text-muted-foreground text-lg">Définissez votre sujet et laissez l&apos;IA rédiger du contenu de qualité pour vous.</p>
+        <h1 className="text-3xl font-bold font-heading text-foreground">{t.factory.title}</h1>
+        <p className="text-muted-foreground text-lg">{t.factory.desc}</p>
       </div>
 
       <Form {...form}>
@@ -126,7 +133,7 @@ export default function CreateArticlePage() {
              <CardContent className="p-4 flex flex-col md:flex-row gap-4 items-center justify-between">
                 <div className="flex items-center gap-2 text-muted-foreground font-medium">
                     <Settings2 className="h-5 w-5" />
-                    <span className="hidden md:inline">Paramètres de rédaction</span>
+                    <span className="hidden md:inline">{t.factory.settingsTitle}</span>
                 </div>
                 <div className="flex flex-1 gap-4 w-full md:w-auto overflow-x-auto pb-2 md:pb-0">
                      <FormField
@@ -137,12 +144,12 @@ export default function CreateArticlePage() {
                               <Select onValueChange={field.onChange} defaultValue={field.value}>
                                 <FormControl>
                                   <SelectTrigger className="h-10 bg-background border-border/50">
-                                    <SelectValue placeholder="Langue" />
+                                    <SelectValue placeholder={t.home.language} />
                                   </SelectTrigger>
                                 </FormControl>
                                 <SelectContent>
-                                  <SelectItem value="fr">🇫🇷 Français</SelectItem>
-                                  <SelectItem value="cn">🇨🇳 Chinois</SelectItem>
+                                  <SelectItem value="fr">🇫🇷 {t.common.french}</SelectItem>
+                                  <SelectItem value="cn">🇨🇳 {t.common.chinese}</SelectItem>
                                 </SelectContent>
                               </Select>
                             </FormItem>
@@ -157,14 +164,14 @@ export default function CreateArticlePage() {
                               <Select onValueChange={field.onChange} defaultValue={field.value}>
                                 <FormControl>
                                   <SelectTrigger className="h-10 bg-background border-border/50">
-                                    <SelectValue placeholder="Ton" />
+                                    <SelectValue placeholder={t.home.tone} />
                                   </SelectTrigger>
                                 </FormControl>
                                 <SelectContent>
-                                  <SelectItem value="educational">🎓 Éducatif & Expert</SelectItem>
-                                  <SelectItem value="promotional">📣 Promotionnel</SelectItem>
-                                  <SelectItem value="inspiring">✨ Inspirant & Lifestyle</SelectItem>
-                                  <SelectItem value="technical">🔬 Technique / TCM</SelectItem>
+                                  <SelectItem value="educational">🎓 {t.home.tones.informative}</SelectItem>
+                                  <SelectItem value="promotional">📣 {t.home.tones.creative}</SelectItem>
+                                  <SelectItem value="inspiring">✨ {t.home.tones.humorous}</SelectItem>
+                                  <SelectItem value="technical">🔬 {t.home.tones.professional}</SelectItem>
                                 </SelectContent>
                               </Select>
                             </FormItem>
@@ -179,13 +186,13 @@ export default function CreateArticlePage() {
                               <Select onValueChange={field.onChange} defaultValue={field.value}>
                                 <FormControl>
                                   <SelectTrigger className="h-10 bg-background border-border/50">
-                                    <SelectValue placeholder="Longueur" />
+                                    <SelectValue placeholder={t.home.length} />
                                   </SelectTrigger>
                                 </FormControl>
                                 <SelectContent>
-                                  <SelectItem value="short">Court (~500 mots)</SelectItem>
-                                  <SelectItem value="medium">Moyen (~1000 mots)</SelectItem>
-                                  <SelectItem value="long">Long (~2000 mots)</SelectItem>
+                                  <SelectItem value="short">{t.home.lengths.short}</SelectItem>
+                                  <SelectItem value="medium">{t.home.lengths.medium}</SelectItem>
+                                  <SelectItem value="long">{t.home.lengths.long}</SelectItem>
                                 </SelectContent>
                               </Select>
                             </FormItem>
@@ -208,7 +215,7 @@ export default function CreateArticlePage() {
                             <FormItem className="flex-1 flex flex-col space-y-0 h-full">
                                 <FormControl>
                                     <Textarea 
-                                        placeholder="Commencez à décrire votre article ici... (Sujet, angle, mots-clés, structure souhaitée)" 
+                                        placeholder={t.factory.promptPlaceholder} 
                                         className="flex-1 w-full h-full min-h-[400px] text-lg p-6 bg-transparent border-0 focus-visible:ring-0 resize-none leading-relaxed placeholder:text-muted-foreground/50"
                                         {...field} 
                                     />
@@ -217,15 +224,15 @@ export default function CreateArticlePage() {
                         )}
                     />
                     <div className="px-6 py-3 border-t border-border/30 flex justify-between items-center bg-muted/10 text-xs text-muted-foreground">
-                        <span>Markdown supporté</span>
-                        <span>{form.watch("prompt").length}/2000 caractères</span>
+                        <span>{t.factory.markdown}</span>
+                        <span>{form.watch("prompt").length}/2000 {t.factory.charCount}</span>
                     </div>
                 </CardContent>
             </Card>
 
             {/* Documents - Optional */}
             <div className="space-y-3">
-                <h3 className="text-sm font-medium text-muted-foreground ml-2">Documents de référence (Optionnel)</h3>
+                <h3 className="text-sm font-medium text-muted-foreground ml-2">{t.factory.docsTitle}</h3>
                 <Card className="border-border/50 shadow-sm bg-muted/10">
                     <CardContent className="p-0">
                              <div 
@@ -241,8 +248,8 @@ export default function CreateArticlePage() {
                                     <UploadCloud className="h-6 w-6" />
                                 </div>
                                 <div className="text-center sm:text-left space-y-1">
-                                    <p className="font-medium text-foreground">Ajouter des fichiers contextuels</p>
-                                    <p className="text-xs text-muted-foreground">Glissez-déposez ou cliquez (PDF, DOCX)</p>
+                                    <p className="font-medium text-foreground">{t.factory.docsDesc}</p>
+                                    <p className="text-xs text-muted-foreground">{t.factory.dragDrop}</p>
                                 </div>
                              </div>
 
@@ -275,11 +282,11 @@ export default function CreateArticlePage() {
           <div className="fixed bottom-0 left-0 right-0 p-4 bg-background/80 backdrop-blur-xl border-t border-border z-40 lg:pl-[260px]">
              <div className="max-w-6xl mx-auto flex justify-between items-center px-4 lg:px-0">
                 <Button variant="ghost" type="button" className="text-muted-foreground hover:text-foreground">
-                    Annuler
+                    {t.common.cancel}
                 </Button>
                 <div className="flex items-center gap-4">
                     <span className="text-sm text-muted-foreground hidden sm:inline-block">
-                        {isGenerating ? "Rédaction en cours..." : "Prêt à rédiger ?"}
+                        {isGenerating ? t.factory.footer.generating : t.factory.footer.ready}
                     </span>
                     <Button 
                         type="submit" 
@@ -292,7 +299,7 @@ export default function CreateArticlePage() {
                         ) : (
                             <Sparkles className="mr-2 h-4 w-4" />
                         )}
-                        Générer
+                        {t.factory.footer.generate}
                     </Button>
                 </div>
              </div>

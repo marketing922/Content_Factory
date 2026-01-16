@@ -1,7 +1,7 @@
 #  Content Factory Calebasse
 
 ![Status](https://img.shields.io/badge/Status-Production-success)
-![Next.js](https://img.shields.io/badge/Next.js-14-black)
+![Next.js](https://img.shields.io/badge/Next.js-16-black)
 ![TypeScript](https://img.shields.io/badge/TypeScript-5.0-blue)
 ![Tailwind](https://img.shields.io/badge/Tailwind-4.0-38bdf8)
 ![Supabase](https://img.shields.io/badge/Supabase-PostgreSQL-3ecf8e)
@@ -16,7 +16,7 @@
 Le système repose sur une architecture moderne séparant l'interface utilisateur de la logique d'IA complexe.
 
 ### 🎨 Frontend (Ce Dépôt)
-- **Framework** : [Next.js 14](https://nextjs.org/) (App Router)
+- **Framework** : [Next.js 16](https://nextjs.org/) (App Router)
 - **Langage** : TypeScript
 - **Style** : Tailwind CSS v4 + Shadcn/UI
 - **Éditeur** : Tiptap (Headless rich text editor)
@@ -108,7 +108,8 @@ src/
 ├── app/
 │   ├── (app)/          # Routes de l'application (Dashboard, Éditeur)
 │   ├── api/            # Routes API Backend (Proxy n8n)
-│   └── layout.tsx      # Layout principal
+│   ├── layout.tsx      # Layout principal
+│   └── proxy.ts        # Proxy Layer (Middleware) & Protection
 ├── components/
 │   ├── article/        # Composants liés aux articles (TOC, Cartes)
 │   ├── ui/             # Composants réutilisables (Shadcn)

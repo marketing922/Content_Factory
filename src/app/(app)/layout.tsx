@@ -1,3 +1,5 @@
+"use client"
+
 import { AppSidebar } from "@/components/app-sidebar"
 import {
   Breadcrumb,
@@ -13,12 +15,15 @@ import {
   SidebarProvider,
   SidebarTrigger,
 } from "@/components/ui/sidebar"
+import { useTranslation } from "@/hooks/use-translation"
 
 export default function AppLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const { t } = useTranslation()
+
   return (
     <SidebarProvider>
       <AppSidebar />
@@ -30,11 +35,11 @@ export default function AppLayout({
             <Breadcrumb>
               <BreadcrumbList>
                 <BreadcrumbItem className="hidden md:block">
-                  <BreadcrumbLink href="/dashboard">Application</BreadcrumbLink>
+                  <BreadcrumbLink href="/dashboard">{t.nav.application}</BreadcrumbLink>
                 </BreadcrumbItem>
                 <BreadcrumbSeparator className="hidden md:block" />
                 <BreadcrumbItem>
-                  <BreadcrumbPage>Tableau de bord</BreadcrumbPage>
+                  <BreadcrumbPage>{t.nav.dashboard}</BreadcrumbPage>
                 </BreadcrumbItem>
               </BreadcrumbList>
             </Breadcrumb>

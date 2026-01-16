@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { toast } from "sonner"
 import { motion, AnimatePresence } from "framer-motion"
+import { useTranslation } from "@/hooks/use-translation"
 
 interface TOCSection {
     id: string
@@ -32,6 +33,7 @@ interface TOCCardProps {
 }
 
 export function TOCCard({ toc, planOptions, onSelectAxis, onModificationRequest, onRegenerate, status, isGenerating, onUpdateTOC }: TOCCardProps) {
+    const { t } = useTranslation()
     const [selectedTitle, setSelectedTitle] = useState(toc?.title || "")
     const [selectedAxis, setSelectedAxis] = useState("")
     const [modRequest, setModRequest] = useState("")
@@ -44,7 +46,7 @@ export function TOCCard({ toc, planOptions, onSelectAxis, onModificationRequest,
 
         if (file.size > 5 * 1024 * 1024) {
              // Simple alert for now
-            alert("Fichier trop volumineux (max 5MB)")
+            alert(t.article.toc.fileSizeError)
             return
         }
 
@@ -81,7 +83,7 @@ export function TOCCard({ toc, planOptions, onSelectAxis, onModificationRequest,
                     <div className="space-y-4">
                         <div className="flex items-center gap-2 px-1">
                             <Sparkles className="h-4 w-4 text-primary" />
-                            <h3 className="text-sm font-semibold text-foreground uppercase tracking-wider">Choisissez un autre axe de rédaction</h3>
+                            <h3 className="text-sm font-semibold text-foreground uppercase tracking-wider">{t.article.toc.chooseAxis}</h3>
                         </div>
                         <div className="space-y-3">
                             {planOptions.axes.map((axis, i) => (
@@ -114,15 +116,15 @@ export function TOCCard({ toc, planOptions, onSelectAxis, onModificationRequest,
                                     className="w-full bg-primary/10 hover:bg-primary/20 text-primary border border-primary/20 shadow-sm transition-all"
                                     onClick={() => {
                                         onRegenerate?.(selectedAxis)
-                                        toast.info("Demande de régénération envoyée...")
+                                        toast.info(t.article.toc.regenInfo)
                                     }}
                                     disabled={isGenerating}
                                 >
                                     <RefreshCcw className={`mr-2 h-4 w-4 ${isGenerating ? "animate-spin" : ""}`} />
-                                    {isGenerating ? "Génération en cours..." : "Générer un plan avec ce choix"}
+                                    {isGenerating ? t.article.toc.generatingStatus : t.article.toc.regenerateBtn}
                                 </Button>
                                 <p className="text-[10px] text-center text-muted-foreground mt-2">
-                                    Cela générera une toute nouvelle structure liée à cet axe de rédaction.
+                                    {t.article.toc.confirmRegen}
                                 </p>
                             </div>
                         )}
@@ -131,7 +133,7 @@ export function TOCCard({ toc, planOptions, onSelectAxis, onModificationRequest,
                     <div className="space-y-4">
                         <div className="flex items-center gap-2 px-1">
                             <Sparkles className="h-4 w-4 text-primary" />
-                            <h3 className="text-sm font-semibold text-foreground uppercase tracking-wider">Choisissez un autre titre</h3>
+                            <h3 className="text-sm font-semibold text-foreground uppercase tracking-wider">{t.article.toc.chooseTitle}</h3>
                         </div>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                             {planOptions.titles.map((title, i) => (
@@ -141,7 +143,7 @@ export function TOCCard({ toc, planOptions, onSelectAxis, onModificationRequest,
                                         setSelectedTitle(title)
                                         // Update the assistant input with this title choice
                                         setModRequest(prev => {
-                                            const prefix = "Utilise ce titre : ";
+                                            const prefix = t.article.parameters?.language === 'zh' ? "使用此标题：" : t.article.parameters?.language === 'en' ? "Use this title: " : "Utilise ce titre : ";
                                             // Simple check to avoid duplicating if already there or replacing main intent
                                             // We append or set. Let's just append neatly.
                                             return prev ? `${prev}\n${prefix}"${title}"` : `${prefix}"${title}"`;
@@ -183,15 +185,15 @@ export function TOCCard({ toc, planOptions, onSelectAxis, onModificationRequest,
                                         <div className="p-1.5 rounded-lg bg-primary/10">
                                             <MessageSquare className="h-3.5 w-3.5 text-primary" />
                                         </div>
-                                        <h4 className="text-xs font-bold text-foreground">Éditeur Assistant (Structure)</h4>
+                                        <h4 className="text-xs font-bold text-foreground">{t.article.toc.assistantTitle}</h4>
                                     </div>
-                                    <Badge variant="outline" className="text-[9px] bg-primary/5 text-primary border-primary/10 px-1.5 h-4">Beta</Badge>
+                                    <Badge variant="outline" className="text-[9px] bg-primary/5 text-primary border-primary/10 px-1.5 h-4">BETA</Badge>
                                 </div>
                                 <div className="relative group">
                                     <Textarea 
                                         value={modRequest}
                                         onChange={(e) => setModRequest(e.target.value)}
-                                        placeholder="Ex: 'Ajoute une partie sur...', 'Change l'angle pour...'" 
+                                        placeholder={t.article.toc.placeholder} 
                                         className="bg-background/50 border-border/40 focus:ring-primary/20 pr-20 text-sm min-h-[44px] max-h-[120px] py-2 px-3 resize-none shadow-inner leading-relaxed rounded-xl transition-all border-2 focus:border-primary/30"
                                         onKeyDown={(e) => {
                                             if (e.key === 'Enter' && !e.shiftKey && (modRequest.trim() || selectedFile)) {
@@ -263,7 +265,7 @@ export function TOCCard({ toc, planOptions, onSelectAxis, onModificationRequest,
                         rows={1}
                         className="text-xl font-bold font-heading text-foreground bg-transparent border-none focus:ring-0 p-0 w-full resize-none overflow-hidden"
                     />
-                    {!isWaiting && <Badge variant="secondary" className="bg-green-500/10 text-green-600 border-green-500/20">Plan Validé</Badge>}
+                    {!isWaiting && <Badge variant="secondary" className="bg-green-500/10 text-green-600 border-green-500/20">{t.article.toc.planValidated}</Badge>}
                 </div>
                 
                 <div className={`space-y-3 ${isGenerating ? "opacity-50 pointer-events-none" : ""}`}>
@@ -275,8 +277,12 @@ export function TOCCard({ toc, planOptions, onSelectAxis, onModificationRequest,
                                     onClick={() => {
                                         if (!modRequest.includes(section.title)) {
                                             const subTitles = section.subsections?.map(s => s.title).join(", ") || "";
-                                            const context = `Section : "${section.title}"${subTitles ? ` (incluant sous-parties : ${subTitles})` : ""}`;
-                                            setModRequest(prev => prev ? `${prev}\nConcernant la ${context}` : `Modifie la ${context} : `)
+                                            const context = t.article.parameters?.language === 'zh' ? `第 ${idx + 1} 部分 "${section.title}"` : t.article.parameters?.language === 'en' ? `Section: "${section.title}"` : `Section : "${section.title}"`;
+                                            const subContext = subTitles ? (t.article.parameters?.language === 'zh' ? ` (包含子章节：${subTitles})` : t.article.parameters?.language === 'en' ? ` (including subsections: ${subTitles})` : ` (incluant sous-parties : ${subTitles})`) : "";
+                                            const modifyPrompt = t.article.parameters?.language === 'zh' ? "修改 " : t.article.parameters?.language === 'en' ? "Modify " : "Modifie la ";
+                                            const regardingPrompt = t.article.parameters?.language === 'zh' ? "关于 " : t.article.parameters?.language === 'en' ? "Regarding " : "Concernant la ";
+                                            
+                                            setModRequest(prev => prev ? `${prev}\n${regardingPrompt}${context}${subContext}` : `${modifyPrompt}${context}${subContext} : `)
                                         }
                                     }}
                                     className={`flex items-start gap-4 p-4 border rounded-xl group transition-all duration-300 cursor-pointer ${

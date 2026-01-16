@@ -3,6 +3,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { RadialBarChart, RadialBar, PolarAngleAxis, ResponsiveContainer } from "recharts"
+import { useTranslation } from "@/hooks/use-translation"
 
 interface QualityCardProps {
     evaluation: any
@@ -11,6 +12,7 @@ interface QualityCardProps {
 }
 
 export function QualityCard({ evaluation, hideScore = false, score: overrideScore }: QualityCardProps) {
+    const { t } = useTranslation()
     if (!evaluation && overrideScore === undefined) return null;
 
     const score = overrideScore ?? evaluation?.global_score ?? 0;
@@ -24,7 +26,7 @@ export function QualityCard({ evaluation, hideScore = false, score: overrideScor
                 {criteria.map((c: any, i: number) => (
                     <ScoreRow 
                         key={i} 
-                        label={c?.name || "Critère"} 
+                        label={c?.name || t.article.quality.criterion} 
                         value={c?.score ?? 0} 
                         max={20} 
                         color="bg-primary" 
@@ -36,8 +38,8 @@ export function QualityCard({ evaluation, hideScore = false, score: overrideScor
             {feedback && (
                 <div className="space-y-2 pt-4 border-t border-border/40">
                     <h4 className="text-xs font-semibold text-foreground uppercase tracking-wider flex items-center gap-2">
-                        <Badge variant="outline" className="text-[10px] px-1.5 py-0 h-4 bg-primary/5 text-primary border-primary/20">Conseils</Badge>
-                        Amélioration
+                        <Badge variant="outline" className="text-[10px] px-1.5 py-0 h-4 bg-primary/5 text-primary border-primary/20">{t.article.quality.feedbackBadge}</Badge>
+                        {t.article.quality.feedbackTitle}
                     </h4>
                     <div className="p-3 rounded-lg bg-primary/5 border border-primary/10 text-[11px] text-muted-foreground leading-relaxed italic">
                         &ldquo;{feedback}&rdquo;
@@ -55,9 +57,9 @@ export function QualityCard({ evaluation, hideScore = false, score: overrideScor
         <Card className="shadow-none border-0 sm:border sm:shadow-sm bg-card/50 backdrop-blur-sm">
             <CardHeader className="pb-2">
                 <CardTitle className="text-base font-semibold flex items-center justify-between">
-                    Qualité Globale
+                    {t.article.quality.title}
                     <Badge variant={score > 80 ? 'default' : 'secondary'} className={score > 80 ? "bg-green-600/80 hover:bg-green-600" : ""}>
-                        {score > 80 ? 'Excellent' : 'À améliorer'}
+                        {score > 80 ? t.article.quality.excellent : t.article.quality.toImprove}
                     </Badge>
                 </CardTitle>
             </CardHeader>
@@ -82,7 +84,7 @@ export function QualityCard({ evaluation, hideScore = false, score: overrideScor
                     </ResponsiveContainer>
                     <div className="absolute inset-0 flex flex-col items-center justify-center pt-6">
                         <span className="text-4xl font-black font-heading text-primary">{score}</span>
-                        <span className="text-[10px] text-muted-foreground uppercase tracking-widest font-medium">sur 100</span>
+                        <span className="text-[10px] text-muted-foreground uppercase tracking-widest font-medium">{t.article.quality.scoreOutOf}</span>
                     </div>
                 </div>
 

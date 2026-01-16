@@ -6,8 +6,10 @@ import { Activity, BookOpen, Clock, Star, ArrowUpRight } from "lucide-react"
 import { supabase } from "@/lib/supabase"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
+import { useTranslation } from "@/hooks/use-translation"
 
 export default function DashboardPage() {
+  const { t } = useTranslation()
   const [stats, setStats] = useState({
     total: 0,
     avgScore: 0,
@@ -69,40 +71,40 @@ export default function DashboardPage() {
   return (
     <div className="flex flex-1 flex-col gap-4 p-4">
         <div className="flex items-center justify-between">
-            <h1 className="text-2xl font-bold font-heading text-primary">Tableau de bord</h1>
+            <h1 className="text-2xl font-bold font-heading text-primary">{t.dashboard.title}</h1>
             <Button asChild>
-                <Link href="/create">Générer un article</Link>
+                <Link href="/create">{t.dashboard.generateBtn}</Link>
             </Button>
         </div>
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <Card className="border-l-4 border-l-calebasse-green-500 shadow-sm">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Articles Générés</CardTitle>
+                <CardTitle className="text-sm font-medium">{t.dashboard.stats.articles}</CardTitle>
                 <BookOpen className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
                 <div className="text-2xl font-bold">{loading ? "..." : stats.total}</div>
-                <p className="text-xs text-muted-foreground">Total sur la plateforme</p>
+                <p className="text-xs text-muted-foreground">{t.dashboard.stats.totalDesc}</p>
             </CardContent>
         </Card>
         <Card className="border-l-4 border-l-calebasse-gold shadow-sm">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Score Moyen</CardTitle>
+                <CardTitle className="text-sm font-medium">{t.dashboard.stats.avgScore}</CardTitle>
                 <Star className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
                 <div className="text-2xl font-bold">{loading ? "..." : `${stats.avgScore}/100`}</div>
-                <p className="text-xs text-muted-foreground">Qualité moyenne</p>
+                <p className="text-xs text-muted-foreground">{t.dashboard.stats.avgDesc}</p>
             </CardContent>
         </Card>
         <Card className="border-l-4 border-l-calebasse-terracotta shadow-sm">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">En Attente</CardTitle>
+                <CardTitle className="text-sm font-medium">{t.dashboard.stats.waiting}</CardTitle>
                 <Clock className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
                 <div className="text-2xl font-bold">{loading ? "..." : stats.waiting}</div>
-                <p className="text-xs text-muted-foreground">Nécessitent une validation</p>
+                <p className="text-xs text-muted-foreground">{t.dashboard.stats.waitingDesc}</p>
             </CardContent>
         </Card>
       </div>
@@ -110,13 +112,13 @@ export default function DashboardPage() {
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
         <Card className="col-span-7 shadow-sm">
           <CardHeader>
-            <CardTitle>Récents</CardTitle>
+            <CardTitle>{t.dashboard.recent.title}</CardTitle>
           </CardHeader>
            <CardContent>
              {loading ? (
-                <div className="text-center py-8 text-muted-foreground">Chargement...</div>
+                <div className="text-center py-8 text-muted-foreground">{t.common.loading}</div>
              ) : stats.recentArticles.length === 0 ? (
-                <div className="text-center py-8 text-muted-foreground">Aucun article pour le moment.</div>
+                <div className="text-center py-8 text-muted-foreground">{t.dashboard.recent.noArticles}</div>
              ) : (
                 <div className="space-y-4">
                     {stats.recentArticles.map(article => (
@@ -131,7 +133,7 @@ export default function DashboardPage() {
                                 </span>
                                 <Button size="sm" variant="ghost" asChild>
                                     <Link href={`/article/${article.id}`}>
-                                        Ouvrir <ArrowUpRight className="ml-2 h-3 w-3" />
+                                        {t.dashboard.recent.open} <ArrowUpRight className="ml-2 h-3 w-3" />
                                     </Link>
                                 </Button>
                             </div>

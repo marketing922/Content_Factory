@@ -58,9 +58,11 @@ import {
     SheetTrigger,
 } from "@/components/ui/sheet"
 import { motion, AnimatePresence } from "framer-motion"
+import { useTranslation } from "@/hooks/use-translation"
 
 
 export default function ArticlePage() {
+  const { t } = useTranslation()
   const params = useParams()
   const [isGenerating, setIsGenerating] = useState(false)
   const [article, setArticle] = useState<any>(null)
@@ -89,11 +91,11 @@ export default function ArticlePage() {
         toast.promise(
             translationPromise,
             {
-                loading: `Tradication vers ${language.toUpperCase()}...`,
-                success: "Demande de traduction envoyée !",
+                loading: `${t.article.status.translating} (${language.toUpperCase()})...`,
+                success: t.common.success,
                 error: (err) => {
                     setIsTranslating(false);
-                    return "Le service de traduction (n8n) ne répond pas. Vérifiez qu'il est bien lancé et accessible.";
+                    return t.common.error;
                 }
             }
         )
@@ -155,7 +157,7 @@ export default function ArticlePage() {
                 },
                 (payload) => {
                     const newRecord = payload.new;
-                    console.log("[DEBUG] Realtime Update Received:", newRecord);
+
                     
                     setArticle((prev: any) => {
                         const updated = { ...prev, ...newRecord };
@@ -251,13 +253,13 @@ export default function ArticlePage() {
     const status = article?.status;
     if (!status) return
 
-    console.log("[DEBUG] Status Watcher:", status, "Last:", lastStatus.current);
+
 
     // Show toasts only on transition (not on load)
     if (lastStatus.current && status !== lastStatus.current) {
-        if (status === 'waiting_validation') toast.success("Structure du plan prête !", { description: "Veuillez valider le plan pour lancer la rédaction." });
-        if (status === 'writing') toast.info("Validation reçue", { description: "L'IA commence la rédaction finale." });
-        if (status === 'published') toast.success("Article finalisé !", { description: "Votre contenu est prêt." });
+        if (status === 'waiting_validation') toast.success(t.article.status.ready);
+        if (status === 'writing') toast.info(t.article.status.writing);
+        if (status === 'published') toast.success(t.article.status.finalizing);
     }
     lastStatus.current = status;
 
@@ -278,18 +280,18 @@ export default function ArticlePage() {
         <header className="flex-shrink-0 flex items-center justify-between px-6 py-4 border-b border-border/40 bg-background/80 backdrop-blur-md z-20">
             {/* ... header content ... */}
             <div className="flex items-center gap-4">
-                <Link href="/dashboard" className="p-2 rounded-full hover:bg-muted text-muted-foreground hover:text-foreground transition-colors">
+                <Link href="/dashboard" className="p-2 rounded-full hover:bg-muted text-muted-foreground hover:text-foreground transition-colors" title={t.article.header.back}>
                     <ArrowLeft className="h-5 w-5" />
                 </Link>
                 <div>
                     <div className="flex items-center gap-3">
                         <h1 className="text-lg font-bold font-heading text-foreground line-clamp-2 max-w-[600px] leading-tight" title={article?.topic}>
-                            {article ? (article.table_of_contents?.title || article.title || article.topic) : "Chargement..."}
+                            {article ? (article.table_of_contents?.title || article.title || article.topic) : t.article.status.loading}
                         </h1>
                         <Badge variant="outline" className="border-primary/20 bg-primary/10 text-primary text-[10px] pointer-events-none uppercase">
-                            {article?.parameters?.language === 'fr' ? 'Version Française' : 
-                             article?.parameters?.language === 'en' ? 'Version Anglaise' : 
-                             article?.parameters?.language === 'cn' ? 'Version Chinoise' : 'Version Inconnue'}
+                            {article?.parameters?.language === 'fr' ? t.article.header.version.fr : 
+                             article?.parameters?.language === 'en' ? t.article.header.version.en : 
+                             article?.parameters?.language === 'cn' ? t.article.header.version.zh : t.common.error}
                         </Badge>
                     </div>
                 </div>
@@ -334,7 +336,7 @@ export default function ArticlePage() {
                     <SheetTrigger asChild>
                         <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-foreground">
                             <HistoryIcon className="mr-2 h-4 w-4" />
-                            Historique
+                            {t.article.header.history}
                         </Button>
                     </SheetTrigger>
                     <SheetContent className="w-[400px] sm:w-[540px] border-l border-border/40 bg-card/95 backdrop-blur-xl">
@@ -405,25 +407,25 @@ export default function ArticlePage() {
                     }}
                 >
                     <RefreshCcw className="mr-2 h-4 w-4" />
-                    Régénérer
+                    {t.article.header.regenerate}
                 </Button>
 
                 <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                         <Button size="sm" className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg shadow-primary/20">
                             <Save className="mr-2 h-4 w-4" />
-                            Sauvegarder
+                            {t.article.header.save}
                             <ChevronDown className="ml-2 h-3 w-3 opacity-50" />
                         </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end" className="w-48">
                         <DropdownMenuItem onClick={() => handleExport('docx')}>
                             <Download className="mr-2 h-4 w-4" />
-                            Télécharger .docx
+                            {t.article.header.exportDocx}
                         </DropdownMenuItem>
                         <DropdownMenuItem onClick={() => handleExport('pdf')}>
                             <Download className="mr-2 h-4 w-4" />
-                            Télécharger .pdf
+                            {t.article.header.exportPdf}
                         </DropdownMenuItem>
                         <DropdownMenuItem 
                             className="text-primary font-medium"
@@ -441,7 +443,7 @@ export default function ArticlePage() {
                             }}
                         >
                             <Save className="mr-2 h-4 w-4" />
-                            Sauvegarder sur Drive
+                            {t.article.header.saveDrive}
                         </DropdownMenuItem>
                     </DropdownMenuContent>
                 </DropdownMenu>
@@ -472,10 +474,10 @@ export default function ArticlePage() {
                                 </div>
                                 <div className="text-center space-y-2">
                                     <h3 className="text-xl font-bold font-heading">
-                                        {article?.status === 'writing' || article?.status === 'generating' ? "L'IA rédige votre article..." :
-                                         article?.status === 'generating_plan' ? "L'IA restructure le plan..." :
-                                         article?.status === 'researching' ? "Recherches en cours..." :
-                                         "Traitement en cours..."}
+                                        {article?.status === 'writing' || article?.status === 'generating' ? t.article.status.writing :
+                                         article?.status === 'generating_plan' ? t.article.status.generatingPlan :
+                                         article?.status === 'researching' ? t.article.status.researching :
+                                         t.article.status.loading}
                                     </h3>
                                     <p className="text-sm text-muted-foreground leading-relaxed">
                                         {article?.status === 'writing' || article?.status === 'generating' ? "Exploration des sources et rédaction de la version finale haute-fidélité." :
@@ -491,7 +493,7 @@ export default function ArticlePage() {
                                     />
                                 </div>
                                 <p className="text-[10px] uppercase tracking-widest text-muted-foreground font-bold opacity-50">
-                                    Temps estimé : ~2 minutes 
+                                    {t.article.editor.assistant.estimated}
                                 </p>
                             </motion.div>
                         </motion.div>
@@ -515,7 +517,7 @@ export default function ArticlePage() {
                                     <Languages className="h-10 w-10 text-primary relative animate-bounce" />
                                 </div>
                                 <div className="text-center space-y-1">
-                                    <h3 className="text-lg font-bold font-heading">Traduction intelligente...</h3>
+                                    <h3 className="text-lg font-bold font-heading">{t.article.status.translating}</h3>
                                     <p className="text-sm text-muted-foreground">L&apos;IA adapte le ton et le style vers la langue cible.</p>
                                 </div>
                                 <div className="w-48 h-1 bg-muted rounded-full overflow-hidden">
@@ -544,13 +546,13 @@ export default function ArticlePage() {
                                 value="plan" 
                                 className="data-[state=active]:bg-transparent data-[state=active]:border-b-2 data-[state=active]:border-primary data-[state=active]:shadow-none rounded-none px-0 text-base font-medium h-full transition-none"
                             >
-                                Structure du Plan
+                                {t.article.tabs.plan}
                             </TabsTrigger>
                             <TabsTrigger 
                                 value="article" 
                                 className="data-[state=active]:bg-transparent data-[state=active]:border-b-2 data-[state=active]:border-primary data-[state=active]:shadow-none rounded-none px-0 text-base font-medium h-full transition-none"
                             >
-                                Article
+                                {t.article.tabs.content}
                             </TabsTrigger>
                         </TabsList>
                         
@@ -577,8 +579,7 @@ export default function ArticlePage() {
                                 }}
                             >
                                 <CheckCircle2 className="mr-2 h-4 w-4" />
-                                <CheckCircle2 className="mr-2 h-4 w-4" />
-                                Confirmer et Lancer la rédaction
+                                {t.article.editor.assistant.validation}
                             </Button>
                         )}
                     </div>
@@ -614,7 +615,7 @@ export default function ArticlePage() {
                                                 // (Using a simple timeout for debounce if we don't want to add lodash)
                                                 if ((window as any)._tocTimeout) clearTimeout((window as any)._tocTimeout);
                                                 (window as any)._tocTimeout = setTimeout(async () => {
-                                                    console.log("[DEBUG] Persisting TOC update to DB...");
+
                                                     const { error } = await supabase
                                                         .from('articles')
                                                         .update({ table_of_contents: newTOC })
@@ -705,7 +706,7 @@ export default function ArticlePage() {
                                 ) : (
                                     <div className="flex flex-col items-center justify-center min-h-[400px] text-muted-foreground/50 border border-dashed rounded-2xl">
                                         <FileText className="h-12 w-12 mb-4 opacity-20" />
-                                        <p>Aucun plan généré pour le moment</p>
+                                        <p>{t.article.editor.placeholder}</p>
                                     </div>
                                 )}
                             </TabsContent>
@@ -888,14 +889,13 @@ export default function ArticlePage() {
                                     <div className="flex flex-col items-center justify-center min-h-[400px] text-muted-foreground space-y-4">
                                         <Loader2 className="h-8 w-8 animate-spin text-primary" />
                                         <div className="text-center">
-                                            <p className="font-medium text-foreground">Contenu en cours de rédaction...</p>
-                                            <p className="text-sm text-muted-foreground mt-1">Status: {article?.status?.replace('_', ' ')}</p>
+                                            <p className="font-medium text-foreground">{t.article.status.writing}</p>
                                         </div>
                                     </div>
                                 ) : (
                                     <div className="flex flex-col items-center justify-center min-h-[400px] text-muted-foreground/50 border border-dashed rounded-2xl">
                                         <Sparkles className="h-12 w-12 mb-4 opacity-20" />
-                                        <p>L&apos;article apparaîtra ici après validation du plan</p>
+                                        <p>{t.article.editor.placeholder}</p>
                                     </div>
                                 )}
                             </TabsContent>
@@ -911,7 +911,7 @@ export default function ArticlePage() {
                 <Tabs defaultValue="quality" className="flex-1 flex flex-col h-full overflow-hidden">
                     <div className="flex-shrink-0 px-6 py-4 border-b border-border/40">
                         <TabsList className="w-full bg-muted/50 p-1 h-auto flex flex-wrap gap-1">
-                            <TabsTrigger value="quality" className="flex-1 text-[10px] py-1.5 px-1 truncate">Qualité</TabsTrigger>
+                            <TabsTrigger value="quality" className="flex-1 text-[10px] py-1.5 px-1 truncate">{t.dashboard.stats.avgScore}</TabsTrigger>
                             <TabsTrigger value="research" className="flex-1 text-[10px] py-1.5 px-1 truncate">Analyse</TabsTrigger>
                             <TabsTrigger value="sources" className="flex-1 text-[10px] py-1.5 px-1 truncate">Sources</TabsTrigger>
                             <TabsTrigger value="metadata" className="flex-1 text-[10px] py-1.5 px-1 truncate">Infos</TabsTrigger>
@@ -955,9 +955,9 @@ export default function ArticlePage() {
                                                 <p className="mt-4 text-[11px] italic">Détails d&apos;évaluation en cours de chargement ou non disponibles pour cet article.</p>
                                             </div>
                                         ) : (
-                                            <div className="py-8 space-y-3">
+                                            <div className="space-y-2">
                                                 <Loader2 className="h-5 w-5 animate-spin mx-auto text-primary/40" />
-                                                <span>En attente d&apos;évaluation...</span>
+                                                <p>{t.common.loading}</p>
                                             </div>
                                         )}
                                     </div>
@@ -1021,7 +1021,7 @@ export default function ArticlePage() {
                                 <div className="relative">
                                     <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                                     <Input 
-                                        placeholder="Approfondir la recherche..." 
+                                        placeholder={t.faq.searchPlaceholder} 
                                         className="pl-9 h-10 bg-muted/30 border-border/40 focus:bg-background transition-all"
                                         onKeyDown={async (e) => {
                                             if (e.key === 'Enter' && article) {
@@ -1059,23 +1059,23 @@ export default function ArticlePage() {
                         <TabsContent value="metadata" className="p-6 mt-0 space-y-6 pb-12 overflow-visible">
                             <div className="p-4 rounded-lg border border-border/50 bg-card">
                                 <h3 className="text-sm font-medium mb-4 flex items-center gap-2 text-primary">
-                                    <Sparkles className="h-4 w-4" /> Statut & Date
+                                    <Sparkles className="h-4 w-4" /> {t.article.metadata.title}
                                 </h3>
                                 <div className="space-y-4 text-xs">
                                     <div className="flex justify-between py-2 border-b border-border/50">
-                                        <span className="text-muted-foreground">ID Unique</span>
+                                        <span className="text-muted-foreground">{t.article.metadata.id}</span>
                                         <span className="font-mono opacity-50 text-[10px]">{article?.id?.slice(0, 8)}...</span>
                                     </div>
                                     <div className="flex justify-between py-2 border-b border-border/50">
-                                        <span className="text-muted-foreground">Date</span>
+                                        <span className="text-muted-foreground">{t.article.metadata.date}</span>
                                         <span className="font-medium">{article ? new Date(article.created_at).toLocaleDateString() : '-'}</span>
                                     </div>
                                     <div className="flex justify-between py-2 border-b border-border/50">
-                                        <span className="text-muted-foreground">Heure</span>
+                                        <span className="text-muted-foreground">{t.article.metadata.time}</span>
                                         <span className="font-medium">{article ? new Date(article.created_at).toLocaleTimeString() : '-'}</span>
                                     </div>
                                     <div className="flex justify-between py-2">
-                                        <span className="text-muted-foreground">Statut</span>
+                                        <span className="text-muted-foreground">{t.article.metadata.status}</span>
                                         <Badge variant="outline" className="text-[10px] px-2 py-0 h-5">
                                             {article?.status?.replace('_', ' ')}
                                         </Badge>
@@ -1085,24 +1085,24 @@ export default function ArticlePage() {
      
                             <div className="p-4 rounded-lg border border-border/50 bg-card">
                                 <h3 className="text-sm font-medium mb-4 flex items-center gap-2">
-                                    <Settings2 className="h-4 w-4" /> Configuration
+                                    <Settings2 className="h-4 w-4" /> {t.article.metadata.config}
                                 </h3>
                                 <div className="space-y-4 text-sm">
                                     <div className="flex justify-between py-2 border-b border-border/50">
-                                        <span className="text-muted-foreground">Ton</span>
+                                        <span className="text-muted-foreground">{t.article.metadata.tone}</span>
                                         <span className="font-medium capitalize">{article?.parameters?.tone || '-'}</span>
                                     </div>
                                     <div className="flex justify-between py-2 border-b border-border/50">
-                                        <span className="text-muted-foreground">Langue</span>
+                                        <span className="text-muted-foreground">{t.article.metadata.language}</span>
                                         <span className="font-medium uppercase">{article?.parameters?.language || '-'}</span>
                                     </div>
                                     <div className="flex justify-between py-2 border-b border-border/50">
-                                        <span className="text-muted-foreground">Longueur</span>
+                                        <span className="text-muted-foreground">{t.article.metadata.length}</span>
                                         <span className="font-medium capitalize">{article?.parameters?.length || '-'}</span>
                                     </div>
                                     <div className="flex justify-between py-2">
-                                        <span className="text-muted-foreground">Mots</span>
-                                        <span className="font-medium">{article?.content?.split(' ').length || 0} mots</span>
+                                        <span className="text-muted-foreground">{t.article.metadata.words}</span>
+                                        <span className="font-medium">{article?.content?.split(' ').length || 0} {t.article.metadata.wordsUnit}</span>
                                     </div>
                                 </div>
                             </div>
@@ -1110,24 +1110,24 @@ export default function ArticlePage() {
                             {/* Token Usage Breakdown */}
                             <div className="p-4 rounded-lg border border-border/50 bg-card">
                                 <h3 className="text-sm font-medium mb-4 flex items-center gap-2">
-                                    <RotateCcw className="h-4 w-4" /> Consommation (Tokens)
+                                    <RotateCcw className="h-4 w-4" /> {t.article.metadata.tokens}
                                 </h3>
                                 <div className="space-y-4 text-sm">
                                     <div className="flex justify-between py-1 text-xs">
-                                        <span className="text-muted-foreground">Recherche</span>
+                                        <span className="text-muted-foreground">{t.settings.usage.research}</span>
                                         <span className="font-medium">{article?.token_usage?.research?.toLocaleString() || 0}</span>
                                     </div>
                                     <div className="flex justify-between py-1 text-xs">
-                                        <span className="text-muted-foreground">Rédaction</span>
+                                        <span className="text-muted-foreground">{t.settings.usage.writing}</span>
                                         <span className="font-medium">{article?.token_usage?.writing?.toLocaleString() || 0}</span>
                                     </div>
                                     <div className="flex justify-between py-1 text-xs">
-                                        <span className="text-muted-foreground">Évaluation</span>
+                                        <span className="text-muted-foreground">{t.settings.usage.eval}</span>
                                         <span className="font-medium">{article?.token_usage?.evaluation?.toLocaleString() || 0}</span>
                                     </div>
                                     <div className="h-px bg-border/50 my-1" />
                                     <div className="flex justify-between py-1 font-semibold text-primary">
-                                        <span>Total</span>
+                                        <span>{t.settings.usage.total}</span>
                                         <span>{article?.token_usage?.total?.toLocaleString() || 0}</span>
                                     </div>
                                 </div>
