@@ -33,7 +33,7 @@ interface TOCCardProps {
 }
 
 export function TOCCard({ toc, planOptions, onSelectAxis, onModificationRequest, onRegenerate, status, isGenerating, onUpdateTOC }: TOCCardProps) {
-    const { t } = useTranslation()
+    const { t, lang } = useTranslation()
     const [selectedTitle, setSelectedTitle] = useState(toc?.title || "")
     const [selectedAxis, setSelectedAxis] = useState("")
     const [modRequest, setModRequest] = useState("")
@@ -277,10 +277,14 @@ export function TOCCard({ toc, planOptions, onSelectAxis, onModificationRequest,
                                     onClick={() => {
                                         if (!modRequest.includes(section.title)) {
                                             const subTitles = section.subsections?.map(s => s.title).join(", ") || "";
-                                            const context = t.article.parameters?.language === 'zh' ? `第 ${idx + 1} 部分 "${section.title}"` : t.article.parameters?.language === 'en' ? `Section: "${section.title}"` : `Section : "${section.title}"`;
-                                            const subContext = subTitles ? (t.article.parameters?.language === 'zh' ? ` (包含子章节：${subTitles})` : t.article.parameters?.language === 'en' ? ` (including subsections: ${subTitles})` : ` (incluant sous-parties : ${subTitles})`) : "";
-                                            const modifyPrompt = t.article.parameters?.language === 'zh' ? "修改 " : t.article.parameters?.language === 'en' ? "Modify " : "Modifie la ";
-                                            const regardingPrompt = t.article.parameters?.language === 'zh' ? "关于 " : t.article.parameters?.language === 'en' ? "Regarding " : "Concernant la ";
+                                            const sectionLabel = lang === 'zh' 
+                                                ? t.article.toc.sectionLabel.replace('{n}', (idx + 1).toString())
+                                                : t.article.toc.sectionLabel;
+                                            
+                                            const context = `${sectionLabel}"${section.title}"`;
+                                            const subContext = subTitles ? `${t.article.toc.sectionIncluding}${subTitles})` : "";
+                                            const modifyPrompt = t.article.toc.modifyLabel;
+                                            const regardingPrompt = t.article.toc.regardingLabel;
                                             
                                             setModRequest(prev => prev ? `${prev}\n${regardingPrompt}${context}${subContext}` : `${modifyPrompt}${context}${subContext} : `)
                                         }

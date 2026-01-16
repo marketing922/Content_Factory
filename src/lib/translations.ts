@@ -336,6 +336,10 @@ export const translations = {
         fileSizeError: "Fichier trop volumineux (max 5MB)",
         regenInfo: "Demande de régénération envoyée...",
         useThisTitle: "Utilise ce titre : ",
+        sectionLabel: "Section : ",
+        sectionIncluding: " (incluant sous-parties : ",
+        modifyLabel: "Modifie la ",
+        regardingLabel: "Concernant la ",
       }
     }
   },
@@ -673,6 +677,10 @@ export const translations = {
         fileSizeError: "File too large (max 5MB)",
         regenInfo: "Regeneration request sent...",
         useThisTitle: "Use this title: ",
+        sectionLabel: "Section: ",
+        sectionIncluding: " (including subsections: ",
+        modifyLabel: "Modify ",
+        regardingLabel: "Regarding ",
       }
     }
   },
@@ -1010,6 +1018,10 @@ export const translations = {
           fileSizeError: "文件太大（最大 5MB）",
           regenInfo: "重生成请求已发送...",
           useThisTitle: "使用此标题：",
+          sectionLabel: "第 {n} 部分 ",
+          sectionIncluding: " (包含子章节：",
+          modifyLabel: "修改 ",
+          regardingLabel: "关于 ",
         }
       }
     }
